@@ -1,0 +1,13 @@
+host = 
+user = 
+password = 
+port = 
+chooserLocation = 
+
+
+#for example :
+host = smtp.gmail.com
+user = JohnDoe@gmail.com
+password = doeAdearFema1eDeer1234
+port = 465
+chooserLocation = C:\Users\John Doe\Downloads
