@@ -85,9 +85,11 @@ public class MailSender {
 		
 		while (true) {
 
+			StringBuilder sb = new StringBuilder("");
 			if (chooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) break;  
 			files.addAll(Arrays.asList(chooser.getSelectedFiles()));
-			System.out.println("Selected files : " + files + "\n");
+			files.stream().forEach((f) -> sb.append(f.getAbsolutePath()).append("\n"));
+			System.out.println("Selected files : \n" + sb.toString() + "\n");
 		
 		}
 
