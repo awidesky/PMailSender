@@ -75,6 +75,9 @@ public class MailSender {
 			
 		});
 		
+		session.getProperties().put("mail.smtp.ssl.trust", host);
+		session.getProperties().put("mail.smtp.starttls.enable", "true");
+		
 	}
 	
 	public static void main(String[] args) {
