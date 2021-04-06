@@ -23,6 +23,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 
 public class MailSender {
@@ -82,7 +83,6 @@ public class MailSender {
 	
 	public static void main(String[] args) {
 		
-		
 		JFileChooser chooser = new JFileChooser((new File(chooserLocation).exists()) ? chooserLocation : null);
 		chooser.setMultiSelectionEnabled(true);
 		
@@ -98,7 +98,7 @@ public class MailSender {
 
 		if (args.length != 0) send(args[0], args[1], files.toArray(new File[]{}));
 		else p(files.toArray(new File[]{}));
-		
+			
 	}
 	
 	public static void p(File... attatch) {
@@ -145,10 +145,12 @@ public class MailSender {
 			System.out.println("\tSending Message...");
 			Transport.send(message);
 			System.out.println("\nMessage Sent Successfully!");
-		
+			JOptionPane.showMessageDialog(null, "Done!", "Message Sent Successfully!", JOptionPane.INFORMATION_MESSAGE);
+			
 		} catch (MessagingException | IOException e) {
 		
 			e.printStackTrace();
+			System.exit(1);
 		
 		}
 
