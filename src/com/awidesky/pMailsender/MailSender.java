@@ -24,6 +24,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 
 public class MailSender {
@@ -86,6 +87,8 @@ public class MailSender {
 		JFileChooser chooser = new JFileChooser((new File(chooserLocation).exists()) ? chooserLocation : null);
 		chooser.setMultiSelectionEnabled(true);
 		
+		System.out.println("Running...");
+		
 		while (true) {
 
 			StringBuilder sb = new StringBuilder("");
@@ -145,10 +148,11 @@ public class MailSender {
 			System.out.println("\tSending Message...");
 			Transport.send(message);
 			System.out.println("\nMessage Sent Successfully!");
-			JOptionPane.showMessageDialog(null, "Done!", "Message Sent Successfully!", JOptionPane.INFORMATION_MESSAGE);
+			SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, "Message Sent Successfully!", "Done!", JOptionPane.INFORMATION_MESSAGE) );
 			
 		} catch (MessagingException | IOException e) {
 		
+			SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE) );
 			e.printStackTrace();
 			System.exit(1);
 		
