@@ -3,7 +3,6 @@ package com.awidesky.pMailsender;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
@@ -12,7 +11,6 @@ import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 import javax.mail.Authenticator;
 import javax.mail.Message;
-import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
@@ -150,7 +148,7 @@ public class MailSender {
 			System.out.println("\nMessage Sent Successfully!");
 			SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, "Message Sent Successfully!", "Done!", JOptionPane.INFORMATION_MESSAGE) );
 			
-		} catch (MessagingException | IOException e) {
+		} catch (Exception e) {
 		
 			SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE) );
 			e.printStackTrace();
