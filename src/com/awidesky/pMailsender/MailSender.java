@@ -20,6 +20,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -146,14 +147,26 @@ public class MailSender {
 			System.out.println("\tSending Message...");
 			Transport.send(message);
 			System.out.println("\nMessage Sent Successfully!");
-			SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, "Message Sent Successfully!", "Done!", JOptionPane.INFORMATION_MESSAGE) );
+			SwingUtilities.invokeLater(() -> {
+				
+				final JDialog dialog = new JDialog();
+				dialog.setAlwaysOnTop(true);
+				JOptionPane.showMessageDialog(dialog, "Message Sent Successfully!", "Done!", JOptionPane.INFORMATION_MESSAGE);
+				
+			});
 			
 		} catch (Exception e) {
 		
-			SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE) );
-			e.printStackTrace();
-			System.exit(1);
-		
+			SwingUtilities.invokeLater(() -> {
+				
+				final JDialog dialog = new JDialog();
+				dialog.setAlwaysOnTop(true);
+				JOptionPane.showMessageDialog(dialog, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE); 
+				e.printStackTrace();
+				System.exit(1);
+				
+			});
+			
 		}
 
 		
