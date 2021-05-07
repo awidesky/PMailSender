@@ -83,6 +83,9 @@ public class MailSender {
 	
 	public static void main(String[] args) {
 		
+		final JDialog dialog = new JDialog();
+		dialog.setAlwaysOnTop(true);
+		
 		JFileChooser chooser = new JFileChooser((new File(chooserLocation).exists()) ? chooserLocation : null);
 		chooser.setMultiSelectionEnabled(true);
 		
@@ -91,7 +94,7 @@ public class MailSender {
 		while (true) {
 
 			StringBuilder sb = new StringBuilder("");
-			if (chooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) break;  
+			if (chooser.showOpenDialog(dialog) != JFileChooser.APPROVE_OPTION) break;  
 			files.addAll(Arrays.asList(chooser.getSelectedFiles()));
 			files.stream().forEach((f) -> sb.append(f.getAbsolutePath()).append("\n"));
 			System.out.println("Selected files : \n" + sb.toString() + "\n");
@@ -149,9 +152,7 @@ public class MailSender {
 			System.out.println("\nMessage Sent Successfully!");
 			SwingUtilities.invokeLater(() -> {
 				
-				final JDialog dialog = new JDialog();
-				dialog.setAlwaysOnTop(true);
-				JOptionPane.showMessageDialog(dialog, "Message Sent Successfully!", "Done!", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Message Sent Successfully!", "Done!", JOptionPane.INFORMATION_MESSAGE);
 				
 			});
 			
@@ -159,9 +160,7 @@ public class MailSender {
 		
 			SwingUtilities.invokeLater(() -> {
 				
-				final JDialog dialog = new JDialog();
-				dialog.setAlwaysOnTop(true);
-				JOptionPane.showMessageDialog(dialog, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE); 
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE); 
 				e.printStackTrace();
 				System.exit(1);
 				
