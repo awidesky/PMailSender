@@ -24,6 +24,8 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 
 public class MailSender {
@@ -83,6 +85,14 @@ public class MailSender {
 	
 	public static void main(String[] args) {
 		
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+				| UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
+		
+		
 		final JDialog dialog = new JDialog();
 		dialog.setAlwaysOnTop(true);
 		
@@ -101,6 +111,8 @@ public class MailSender {
 		
 		}
 
+		dialog.dispose();
+		
 		if (args.length != 0) send(args[0], args[1], files.toArray(new File[]{}));
 		else p(files.toArray(new File[]{}));
 			
