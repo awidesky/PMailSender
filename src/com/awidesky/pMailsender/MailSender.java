@@ -41,6 +41,8 @@ public class MailSender {
 	
 	private static final ArrayList<File> files = new ArrayList<>();
 	
+	private static final JDialog dialog = new JDialog();
+	
 	
 	static { /* get email address and password */
 		
@@ -93,7 +95,6 @@ public class MailSender {
 		}
 		
 		
-		final JDialog dialog = new JDialog();
 		dialog.setAlwaysOnTop(true);
 		
 		JFileChooser chooser = new JFileChooser((new File(chooserLocation).exists()) ? chooserLocation : null);
@@ -164,7 +165,8 @@ public class MailSender {
 			System.out.println("\nMessage Sent Successfully!");
 			SwingUtilities.invokeLater(() -> {
 				
-				JOptionPane.showMessageDialog(null, "Message Sent Successfully!", "Done!", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(dialog, "Message Sent Successfully!", "Done!", JOptionPane.INFORMATION_MESSAGE);
+				dialog.dispose();
 				
 			});
 			
@@ -172,8 +174,9 @@ public class MailSender {
 		
 			SwingUtilities.invokeLater(() -> {
 				
-				JOptionPane.showMessageDialog(null, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE); 
+				JOptionPane.showMessageDialog(dialog, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
 				e.printStackTrace();
+				dialog.dispose();
 				System.exit(1);
 				
 			});
