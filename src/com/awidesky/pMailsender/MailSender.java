@@ -138,7 +138,7 @@ public class MailSender {
 			
 			System.out.println("\tAdding Text Content Into Message...");
 			MimeBodyPart m1 = new MimeBodyPart();
-			m1.setText(content, "utf-8");
+			m1.setText(content.replace("\\n", "\n"), "utf-8");
 			
 			Multipart mp = new MimeMultipart();
 			mp.addBodyPart(m1);
