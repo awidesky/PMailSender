@@ -10,4 +10,5 @@ java -jar P.jar "%t%" "%c%"
 
 if %errorlevel% == 1 (
      pause
+     goto start
 )
