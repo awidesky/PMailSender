@@ -20,13 +20,13 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
-
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileFilter;
 
 
 public class MailSender {
@@ -99,7 +99,44 @@ public class MailSender {
 		dialog.setAlwaysOnTop(true);
 		
 		JFileChooser chooser = new JFileChooser((new File(chooserLocation).exists()) ? chooserLocation : null);
+		
 		chooser.setMultiSelectionEnabled(true);
+		chooser.setAccessory(new ImageViewer(chooser));
+		chooser.addChoosableFileFilter(new FileFilter() {
+			
+			public boolean accept(File f) {
+				if (f.isDirectory()
+						|| f.getName().endsWith(".jpeg")
+						|| f.getName().endsWith(".jpg")
+						|| f.getName().endsWith(".bmp"))
+					return true;
+				else
+					return false;
+			}
+
+			public String getDescription() {
+				return "Picture files (*.jpeg, *.jpg, *.bmp)";
+			}
+		});
+		
+		chooser.addChoosableFileFilter(new FileFilter() {
+			
+			public boolean accept(File f) {
+				if (f.isDirectory()
+						|| f.getName().endsWith(".pdf")
+						|| f.getName().endsWith(".docx")
+						|| f.getName().endsWith(".hwp")
+						|| f.getName().endsWith(".xlsx")
+						|| f.getName().endsWith(".pptx"))
+					return true;
+				else
+					return false;
+			}
+
+			public String getDescription() {
+				return "Document files (*.pdf, *.docx, *.hwp, *.xlsx, *.pptx)";
+			}
+		});
 		
 		System.out.println("Running...");
 		
