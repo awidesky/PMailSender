@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -108,14 +109,15 @@ public class MailSender {
 				if (f.isDirectory()
 						|| f.getName().endsWith(".jpeg")
 						|| f.getName().endsWith(".jpg")
-						|| f.getName().endsWith(".bmp"))
+						|| f.getName().endsWith(".bmp")
+						|| f.getName().endsWith(".png"))
 					return true;
 				else
 					return false;
 			}
 
 			public String getDescription() {
-				return "Picture files (*.jpeg, *.jpg, *.bmp)";
+				return "Picture files (*.jpeg, *.jpg, *.png, *.bmp)";
 			}
 		});
 		
@@ -140,11 +142,15 @@ public class MailSender {
 		
 		System.out.println("Running...");
 		
+		File startPath = new File(chooserLocation);
 		while (true) {
-
+			
 			StringBuilder sb = new StringBuilder("");
-			if (chooser.showOpenDialog(dialog) != JFileChooser.APPROVE_OPTION) break;  
-			files.addAll(Arrays.asList(chooser.getSelectedFiles()));
+			chooser.setCurrentDirectory(startPath);
+			if (chooser.showOpenDialog(dialog) != JFileChooser.APPROVE_OPTION) break;
+			List<File> temp = Arrays.asList(chooser.getSelectedFiles());
+			startPath = temp.get(temp.size() - 1);
+			files.addAll(temp);
 			files.stream().forEach((f) -> sb.append(f.getAbsolutePath()).append("\n"));
 			System.out.println("Selected files : \n" + sb.toString() + "\n");
 		
