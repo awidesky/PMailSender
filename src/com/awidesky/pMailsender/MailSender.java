@@ -65,6 +65,8 @@ public class MailSender {
 	
 	static { /* set JavaMail configurations */
 		
+		System.out.println("Preparing session...");
+		
 		System.setProperty("mail.mime.splitlongparameters", "false");
 		
 		
@@ -89,6 +91,7 @@ public class MailSender {
 	
 	public static void main(String[] args) {
 		
+		System.out.println("Preparing UI...");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
