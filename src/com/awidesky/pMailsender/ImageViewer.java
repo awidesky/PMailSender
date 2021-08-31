@@ -15,15 +15,22 @@ public class ImageViewer extends JLabel implements PropertyChangeListener {
 
 	private static final long serialVersionUID = -9022451413854391431L;
 	
-	private static final int PREFERRED_WIDTH = 240;
-	private static final int PREFERRED_HEIGHT = 160;
+	private static double PREFERRED_WIDTH_RATIO = 0.0;
+	private static double PREFERRED_HEIGHT_RATIO = 0.0;
+	
+	private JFileChooser ch;
 	
 	public  ImageViewer(JFileChooser chooser) {
 
+		ch = chooser;
+		
 		setVerticalAlignment(JLabel.CENTER);
 	    setHorizontalAlignment(JLabel.CENTER);
 	    chooser.addPropertyChangeListener(this);
-	    setPreferredSize(new Dimension(PREFERRED_WIDTH, PREFERRED_HEIGHT));
+	    setPreferredSize(new Dimension(240, 160));
+	    
+	    PREFERRED_WIDTH_RATIO = 0.35;
+	    PREFERRED_HEIGHT_RATIO = 0.4;
 	    
 	}
 	
@@ -35,16 +42,30 @@ public class ImageViewer extends JLabel implements PropertyChangeListener {
 			File file = (File)arg0.getNewValue();
 			if (file != null) {
 				ImageIcon icon = new ImageIcon(file.getPath());
-				if (icon.getIconWidth() > PREFERRED_WIDTH) {
-					icon = new ImageIcon(icon.getImage().getScaledInstance(PREFERRED_WIDTH, -1, Image.SCALE_DEFAULT));
-					if (icon.getIconHeight() > PREFERRED_HEIGHT) {
+				if (icon.getIconWidth() > getPreferredWidth()) {
+					icon = new ImageIcon(icon.getImage().getScaledInstance(getPreferredWidth(), -1, Image.SCALE_DEFAULT));
+					if (icon.getIconHeight() > getPreferredHeight()) {
 						icon = new ImageIcon(
-								icon.getImage().getScaledInstance(-1, PREFERRED_HEIGHT, Image.SCALE_DEFAULT));
+								icon.getImage().getScaledInstance(-1, getPreferredHeight(), Image.SCALE_DEFAULT));
 					}
 				}
 				setIcon(icon);
 			}
 		}
+	}
+	
+	public void dialogSizeChange() {
+		
+		setPreferredSize(new Dimension(getPreferredWidth(), getPreferredHeight()));
+		
+	}
+	
+	public int getPreferredWidth() {
+		return (int)(ch.getWidth() * PREFERRED_WIDTH_RATIO);
+	}
+	
+	public int getPreferredHeight() {
+		return (int)(ch.getHeight() * PREFERRED_HEIGHT_RATIO);
 	}
 
 }

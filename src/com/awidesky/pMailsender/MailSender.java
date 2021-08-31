@@ -1,5 +1,7 @@
 package com.awidesky.pMailsender;
 
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -104,8 +106,14 @@ public class MailSender {
 		
 		JFileChooser chooser = new JFileChooser((new File(chooserLocation).exists()) ? chooserLocation : null);
 		
+		ImageViewer temp1 = new ImageViewer(chooser);
 		chooser.setMultiSelectionEnabled(true);
-		chooser.setAccessory(new ImageViewer(chooser));
+		chooser.setAccessory(temp1);
+		chooser.addComponentListener(new ComponentAdapter() {
+		    public void componentResized(ComponentEvent e) {
+		    	temp1.dialogSizeChange();
+		    }
+		});
 		chooser.addChoosableFileFilter(new FileFilter() {
 			
 			public boolean accept(File f) {
