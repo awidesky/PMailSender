@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -40,6 +41,8 @@ public class MailSender {
 	private static String port;
 	private static String chooserLocation;
 	
+	private final static long attatchLimit = 10L * 1024 * 1024;
+	
 	private static final Properties props = new Properties();
 	private static final Session session;
 	
@@ -60,6 +63,7 @@ public class MailSender {
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
+			//TODO : exit
 		}
 		
 	}
@@ -91,8 +95,8 @@ public class MailSender {
 		
 	}
 	
-	public static void main(String[] args) {
-		
+	public static void main(String[] args) throws Exception {
+
 		System.out.println("Preparing UI...");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -169,18 +173,49 @@ public class MailSender {
 
 		dialog.dispose();
 		
-		if (args.length != 0) send(args[0], args[1], files.toArray(new File[]{}));
-		else p(files.toArray(new File[]{}));
+		if (args.length != 0) send(args[0], args[1], files);
+		else p(files);
 			
 	}
 	
-	public static void p(File... attatch) {
+	public static void p(List<File> attatch) throws Exception {
 	
 		send("p", " ", attatch);
 		
 	}
 	
-	public static void send(String title, String content, File... attatch) {
+	public static void send(String title, String content, List<File> attatch) throws Exception {
+		
+		if (attatch.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limil)
+		
+			title += " + 링크도 각각 클릭";
+			List<File> dropboxed;
+			System.out.println("Mail attachment too big! (>10MB)");
+			
+			dropboxed = attatch.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
+			if(dropboxed.size() != 0) {
+				attatch.removeAll(dropboxed);
+			}
+			
+			long totalSize = 0L;
+			for(int i = 0; i < attatch.size(); i++) {
+				
+				totalSize += attatch.get(i).length();
+				
+				if(totalSize >= attatchLimit) {
+					//No super big file(s), but still exceed limit.
+					
+					System.out.println("Trying dropbox link instead..");
+					List<File> temp = attatch.subList(i, attatch.size());
+					dropboxed.addAll(temp);
+					content += System.lineSeparator() + new DropboxFileUploader().uploadFile(dropboxed, "/");
+					temp.clear();
+					
+				}
+				
+			}
+			
+		}
 		
 		try {
 		
