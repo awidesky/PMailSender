@@ -63,7 +63,7 @@ public class MailSender {
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
-			//TODO : exit
+			System.exit(1);
 		}
 		
 	}
