@@ -46,7 +46,7 @@ public class MailSender {
 	private static final Properties props = new Properties();
 	private static final Session session;
 	
-	private static final ArrayList<File> files = new ArrayList<>();
+	private static ArrayList<File> files = new ArrayList<>();
 	
 	private static final JDialog dialog = new JDialog();
 	
@@ -67,7 +67,6 @@ public class MailSender {
 		}
 		
 	}
-	
 	
 	static { /* set JavaMail configurations */
 		
@@ -173,6 +172,8 @@ public class MailSender {
 
 		dialog.dispose();
 		
+		files = files.stream().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(ArrayList::new));
+		
 		if (args.length != 0) send(args[0], args[1], files);
 		else p(files);
 			
@@ -188,9 +189,10 @@ public class MailSender {
 		
 		if (attatch.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limil)
 		
-			title += " + 링크도 각각 클릭";
+			title += " + 링크도 각각 클릭(pdf면 오른쪽 점세개 -> 다운로드)";
 			List<File> dropboxed;
 			System.out.println("Mail attachment too big! (>10MB)");
+			System.out.println("Trying dropbox link instead..");
 			
 			dropboxed = attatch.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
 			if(dropboxed.size() != 0) {
@@ -205,15 +207,15 @@ public class MailSender {
 				if(totalSize >= attatchLimit) {
 					//No super big file(s), but still exceed limit.
 					
-					System.out.println("Trying dropbox link instead..");
 					List<File> temp = attatch.subList(i, attatch.size());
 					dropboxed.addAll(temp);
-					content += System.lineSeparator() + new DropboxFileUploader().uploadFile(dropboxed, "/");
 					temp.clear();
 					
 				}
 				
 			}
+			
+			content += System.lineSeparator() + new DropboxFileUploader().uploadFile(dropboxed, "/document/");
 			
 		}
 		
