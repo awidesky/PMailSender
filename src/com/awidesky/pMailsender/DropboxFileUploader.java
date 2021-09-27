@@ -139,10 +139,25 @@ public class DropboxFileUploader {
 				sb.append(System.lineSeparator());
 			
 			} catch (Exception ex) {
+				
 				System.out.println();
 				System.out.println("Failed to upload file \"" + f.getName() + "\": " + ex.getMessage());
+				System.out.println("Try deleting uploaded files...");
 				System.out.println();
+				
+				for (int i = 0; i < list.indexOf(f); i++) {
+					try {
+						client.files().deleteV2(dropboxPath + list.get(i).getName());
+					} catch (Exception e) {
+						System.out.println();
+						System.out.println("Failed to delete uploaded file \"" + list.get(i).getName() + "\"");
+						e.printStackTrace();
+						System.out.println();
+					}
+				}
+				
 				throw ex;
+				
 			}
 		}
 		
