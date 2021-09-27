@@ -147,7 +147,16 @@ public class DropboxFileUploader {
 				
 				for (int i = 0; i < list.indexOf(f); i++) {
 					try {
-						client.files().deleteV2(dropboxPath + list.get(i).getName());
+						
+						boolean isExist = true;
+				        try {
+				            client.files().getMetadata(dropboxPath + list.get(i).getName());
+				        } catch (Exception e){
+				        	isExist = false;
+				        }
+				        
+						if(isExist) client.files().deleteV2(dropboxPath + list.get(i).getName());
+						
 					} catch (Exception e) {
 						System.out.println();
 						System.out.println("Failed to delete uploaded file \"" + list.get(i).getName() + "\"");
