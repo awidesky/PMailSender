@@ -172,7 +172,7 @@ public class MailSender {
 
 		dialog.dispose();
 		
-		files = files.stream().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(ArrayList::new));
+		files = files.stream().distinct().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(ArrayList::new));
 		
 		if (args.length != 0) send(args[0], args[1], files);
 		else p(files);
