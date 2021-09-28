@@ -49,6 +49,7 @@ public class DropboxFileUploader {
 	 */
 	public DropboxFileUploader() throws Exception {
 
+		System.out.println("Authorizing Dropbox account..");
 		readConfig();
 
 		config = DbxRequestConfig.newBuilder(clientIdentifier).withAutoRetryEnabled()
@@ -120,22 +121,25 @@ public class DropboxFileUploader {
 
 	}
 
-	public String uploadFile(List<File> list, String dropboxPath) throws Exception {
+	public String uploadFileAndGetLink(List<File> list, String dropboxPath) throws Exception {
 		
+		System.out.println();
+		System.out.println("Uploading...");
 		StringBuilder sb = new StringBuilder("");
 		
 		for (File f : list) {
-			try (FileInputStream in = new FileInputStream(f)) {
-
-				UploadProgress prog = new UploadProgress(f);
-				FileMetadata metadata = client.files().uploadBuilder(dropboxPath + f.getName()).withMode(WriteMode.ADD)
-						.withClientModified(new Date(f.lastModified()))
-						.uploadAndFinish(in, prog);
-				System.out.println();
-				System.out.println(f.getName() + "matadata : " + metadata.toStringMultiline());
-				prog.done();
 				
-				sb.append(client.sharing().createSharedLinkWithSettings(dropboxPath + f.getName()).getUrl());
+			String link;
+			try {
+				
+				if(!isLinkExists(dropboxPath + f.getName())) {
+					uploadFile(f, dropboxPath);
+					link = client.sharing().createSharedLinkWithSettings(dropboxPath + f.getName()).getUrl();
+				}
+
+				link = client.sharing().listSharedLinksBuilder().withPath(dropboxPath + f.getName()).start().getLinks().get(0).getUrl();
+				
+				sb.append(link.contains("dl=0") ? link.replace("dl=0", "dl=1") : (link.contains("?") ? link + "&dl=1" : link + "?dl=1"));
 				sb.append(System.lineSeparator());
 			
 			} catch (Exception ex) {
@@ -146,23 +150,9 @@ public class DropboxFileUploader {
 				System.out.println();
 				
 				for (int i = 0; i < list.indexOf(f); i++) {
-					try {
-						
-						boolean isExist = true;
-				        try {
-				            client.files().getMetadata(dropboxPath + list.get(i).getName());
-				        } catch (Exception e){
-				        	isExist = false;
-				        }
-				        
-						if(isExist) client.files().deleteV2(dropboxPath + list.get(i).getName());
-						
-					} catch (Exception e) {
-						System.out.println();
-						System.out.println("Failed to delete uploaded file \"" + list.get(i).getName() + "\"");
-						e.printStackTrace();
-						System.out.println();
-					}
+					
+					deleteLink(dropboxPath + list.get(i).getName());
+
 				}
 				
 				throw ex;
@@ -170,9 +160,53 @@ public class DropboxFileUploader {
 			}
 		}
 		
+		System.out.println();
 		return sb.toString();
 	}
 	
+	private void uploadFile(File f, String path) throws Exception {
+
+		FileInputStream in = new FileInputStream(f);
+
+		UploadProgress prog = new UploadProgress(f);
+		FileMetadata metadata = client.files().uploadBuilder(path + f.getName()).withMode(WriteMode.ADD)
+				.withClientModified(new Date(f.lastModified())).uploadAndFinish(in, prog);
+		System.out.println();
+		System.out.println(f.getName() + "matadata : " + metadata.toStringMultiline());
+		prog.done();
+
+		in.close();
+
+	}
+	
+	private boolean isLinkExists(String path) {
+		
+		boolean result = true;
+		
+        try {
+            client.files().getMetadata(path);
+        } catch (Exception e){
+        	result = false;
+        }
+
+        return result;
+		
+	}
+	
+	private void deleteLink(String path) {
+		
+		try {
+			
+			if(isLinkExists(path)) client.files().deleteV2(path);
+			
+		} catch (Exception e) {
+			System.out.println();
+			System.out.println("Failed to delete uploaded file \"" + path + "\"");
+			e.printStackTrace();
+			System.out.println();
+		}
+		
+	}
 	
 	private class UploadProgress extends JFrame implements IOUtil.ProgressListener {
 

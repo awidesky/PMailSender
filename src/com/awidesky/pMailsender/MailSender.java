@@ -189,7 +189,7 @@ public class MailSender {
 		
 		if (attatch.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limil)
 		
-			title += " + 링크도 각각 클릭(pdf면 오른쪽 점세개 -> 다운로드)";
+			title += " + 링크도 각각 클릭";
 			List<File> dropboxed;
 			System.out.println("Mail attachment too big! (>10MB)");
 			System.out.println("Trying dropbox link instead..");
@@ -215,7 +215,7 @@ public class MailSender {
 				
 			}
 			
-			content += System.lineSeparator() + new DropboxFileUploader().uploadFile(dropboxed, "/document/");
+			content += System.lineSeparator() + new DropboxFileUploader().uploadFileAndGetLink(dropboxed, "/document/");
 			
 		}
 		
