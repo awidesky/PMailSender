@@ -124,7 +124,7 @@ public class DropboxFileUploader {
 	public String uploadFileAndGetLink(List<File> list, String dropboxPath) throws Exception {
 		
 		System.out.println();
-		System.out.println("Uploading...");
+		System.out.println("Getting download links...");
 		StringBuilder sb = new StringBuilder("");
 		
 		for (File f : list) {
@@ -133,11 +133,13 @@ public class DropboxFileUploader {
 			try {
 				
 				if(!isLinkExists(dropboxPath + f.getName())) {
+					System.out.println("Uploading " + f.getName() + "...");
 					uploadFile(f, dropboxPath);
 					link = client.sharing().createSharedLinkWithSettings(dropboxPath + f.getName()).getUrl();
+				} else {
+					System.out.println(f.getName() + " is already uploaded, retrieving link...");
+					link = client.sharing().listSharedLinksBuilder().withPath(dropboxPath + f.getName()).start().getLinks().get(0).getUrl();
 				}
-
-				link = client.sharing().listSharedLinksBuilder().withPath(dropboxPath + f.getName()).start().getLinks().get(0).getUrl();
 				
 				sb.append(link.contains("dl=0") ? link.replace("dl=0", "dl=1") : (link.contains("?") ? link + "&dl=1" : link + "?dl=1"));
 				sb.append(System.lineSeparator());
