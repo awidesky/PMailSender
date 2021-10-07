@@ -143,6 +143,7 @@ public class DropboxFileUploader {
 				
 				sb.append(link.contains("dl=0") ? link.replace("dl=0", "dl=1") : (link.contains("?") ? link + "&dl=1" : link + "?dl=1"));
 				sb.append(System.lineSeparator());
+				sb.append(System.lineSeparator());
 			
 			} catch (Exception ex) {
 				
