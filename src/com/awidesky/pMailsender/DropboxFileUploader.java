@@ -133,11 +133,11 @@ public class DropboxFileUploader {
 			try {
 				
 				if(!isLinkExists(dropboxPath + f.getName())) {
-					System.out.println("Uploading " + f.getName() + "...");
+					System.out.println("Uploading \"" + f.getName() + "\"...");
 					uploadFile(f, dropboxPath);
 					link = client.sharing().createSharedLinkWithSettings(dropboxPath + f.getName()).getUrl();
 				} else {
-					System.out.println(f.getName() + " is already uploaded, retrieving link...");
+					System.out.println("\"" + f.getName() + "\"S is already uploaded, retrieving link...");
 					link = client.sharing().listSharedLinksBuilder().withPath(dropboxPath + f.getName()).start().getLinks().get(0).getUrl();
 				}
 				

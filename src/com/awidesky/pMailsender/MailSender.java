@@ -96,7 +96,27 @@ public class MailSender {
 	
 	public static void main(String[] args) throws Exception {
 
-		System.out.println("Preparing UI...");
+		String title = "p";
+		String content = " ";
+
+		for (int i = 0; i < args.length; i++) {
+
+			if (args[i].startsWith("-title=")) {
+				title = args[i].replace("-title=", "");
+			}
+
+			if (args[i].startsWith("-content=")) {
+				content = args[i].replace("-content=", "");
+			}
+
+			if (args[i].equals("-files")) {
+				files.addAll(Arrays.asList(args).subList(i + 1, args.length).stream().map(File::new)
+						.collect(Collectors.toList()));
+				break;
+			}
+		}
+
+			System.out.println("Preparing UI...");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
@@ -174,15 +194,8 @@ public class MailSender {
 		
 		files = files.stream().distinct().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(ArrayList::new));
 		
-		if (args.length != 0) send(args[0], args[1], files);
-		else p(files);
+		send(title, content, files);
 			
-	}
-	
-	public static void p(List<File> attatch) throws Exception {
-	
-		send("p", " ", attatch);
-		
 	}
 	
 	public static void send(String title, String content, List<File> attatch) throws Exception {

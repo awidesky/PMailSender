@@ -5,8 +5,11 @@ set /p c=content :
 
 :start
 
-java -jar P.jar "%t%" "%c%"
-
+if "%~1"=="" (
+  java -jar P,jar "-title=%t%" "-content=%c%"
+) else (
+  java -jar P.jar "-title=%t%" "-content=%c%" -files %*
+)
 
 if %errorlevel% == 1 (
      pause
