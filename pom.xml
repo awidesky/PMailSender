@@ -25,12 +25,18 @@
     </plugins>
   </build>
 	<dependencies>
-		<!-- https://mvnrepository.com/artifact/com.sun.mail/jakarta.mail -->
-		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>jakarta.mail</artifactId>
-			<version>1.6.7</version>
-		</dependency>
+	<!-- https://mvnrepository.com/artifact/com.sun.mail/jakarta.mail -->
+	<dependency>
+		<groupId>com.sun.mail</groupId>
+		<artifactId>jakarta.mail</artifactId>
+		<version>1.6.7</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/com.dropbox.core/dropbox-core-sdk -->
+	<dependency>
+		<groupId>com.dropbox.core</groupId>
+		<artifactId>dropbox-core-sdk</artifactId>
+		<version>4.0.1</version>
+	</dependency>
 
-	</dependencies>
+</dependencies>
 </project>

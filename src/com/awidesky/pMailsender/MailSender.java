@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -40,10 +41,12 @@ public class MailSender {
 	private static String port;
 	private static String chooserLocation;
 	
+	private final static long attatchLimit = 10L * 1024 * 1024;
+	
 	private static final Properties props = new Properties();
 	private static final Session session;
 	
-	private static final ArrayList<File> files = new ArrayList<>();
+	private static ArrayList<File> files = new ArrayList<>();
 	
 	private static final JDialog dialog = new JDialog();
 	
@@ -60,10 +63,10 @@ public class MailSender {
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
+			System.exit(1);
 		}
 		
 	}
-	
 	
 	static { /* set JavaMail configurations */
 		
@@ -75,6 +78,8 @@ public class MailSender {
 		props.put("mail.smtp.host", host);
 		props.put("mail.smtp.port", port);
 		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.ssl.trust", host);
+		props.put("mail.smtp.starttls.enable", "true");
 
 		session = Session.getDefaultInstance(props, new Authenticator() {
 			
@@ -86,14 +91,31 @@ public class MailSender {
 			
 		});
 		
-		session.getProperties().put("mail.smtp.ssl.trust", host);
-		session.getProperties().put("mail.smtp.starttls.enable", "true");
-		
 	}
 	
-	public static void main(String[] args) {
-		
-		System.out.println("Preparing UI...");
+	public static void main(String[] args) throws Exception {
+
+		String title = "p";
+		String content = " ";
+
+		for (int i = 0; i < args.length; i++) {
+
+			if (args[i].startsWith("-title=")) {
+				title = args[i].replace("-title=", "");
+			}
+
+			if (args[i].startsWith("-content=")) {
+				content = args[i].replace("-content=", "");
+			}
+
+			if (args[i].equals("-files")) {
+				files.addAll(Arrays.asList(args).subList(i + 1, args.length).stream().map(File::new)
+						.collect(Collectors.toList()));
+				break;
+			}
+		}
+
+			System.out.println("Preparing UI...");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
@@ -169,18 +191,45 @@ public class MailSender {
 
 		dialog.dispose();
 		
-		if (args.length != 0) send(args[0], args[1], files.toArray(new File[]{}));
-		else p(files.toArray(new File[]{}));
+		files = files.stream().distinct().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(ArrayList::new));
+		
+		send(title, content, files);
 			
 	}
 	
-	public static void p(File... attatch) {
-	
-		send("p", " ", attatch);
+	public static void send(String title, String content, List<File> attatch) throws Exception {
 		
-	}
-	
-	public static void send(String title, String content, File... attatch) {
+		if (attatch.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limil)
+		
+			title += " + 링크(들)도 클릭";
+			List<File> dropboxed;
+			System.out.println("Mail attachment too big! (>10MB)");
+			System.out.println("Trying dropbox link instead..");
+			
+			dropboxed = attatch.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
+			if(dropboxed.size() != 0) {
+				attatch.removeAll(dropboxed);
+			}
+			
+			long totalSize = 0L;
+			for(int i = 0; i < attatch.size(); i++) {
+				
+				totalSize += attatch.get(i).length();
+				
+				if(totalSize >= attatchLimit) {
+					//No super big file(s), but still exceed limit.
+					
+					List<File> temp = attatch.subList(i, attatch.size());
+					dropboxed.addAll(temp);
+					temp.clear();
+					
+				}
+				
+			}
+			
+			content += System.lineSeparator() + new DropboxFileUploader().uploadFileAndGetLink(dropboxed, "/document/");
+			
+		}
 		
 		try {
 		
