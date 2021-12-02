@@ -5,7 +5,9 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -41,15 +43,20 @@ public class ImageViewer extends JLabel implements PropertyChangeListener {
 
 			File file = (File)arg0.getNewValue();
 			if (file != null) {
-				ImageIcon icon = new ImageIcon(file.getPath());
-				if (icon.getIconWidth() > getPreferredWidth()) {
-					icon = new ImageIcon(icon.getImage().getScaledInstance(getPreferredWidth(), -1, Image.SCALE_DEFAULT));
-					if (icon.getIconHeight() > getPreferredHeight()) {
+				try {
+					ImageIcon icon = new ImageIcon(ImageIO.read(file));
+					if (icon.getIconWidth() > getPreferredWidth()) {
 						icon = new ImageIcon(
-								icon.getImage().getScaledInstance(-1, getPreferredHeight(), Image.SCALE_DEFAULT));
+								icon.getImage().getScaledInstance(getPreferredWidth(), -1, Image.SCALE_DEFAULT));
+						if (icon.getIconHeight() > getPreferredHeight()) {
+							icon = new ImageIcon(
+									icon.getImage().getScaledInstance(-1, getPreferredHeight(), Image.SCALE_DEFAULT));
+						}
 					}
+					setIcon(icon);
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-				setIcon(icon);
 			}
 		}
 	}
