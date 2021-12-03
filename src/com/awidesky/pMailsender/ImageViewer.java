@@ -2,6 +2,7 @@ package com.awidesky.pMailsender;
 
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -21,6 +22,7 @@ public class ImageViewer extends JLabel implements PropertyChangeListener {
 	private static double PREFERRED_HEIGHT_RATIO = 0.0;
 	
 	private JFileChooser ch;
+	private File file = null;
 	
 	public  ImageViewer(JFileChooser chooser) {
 
@@ -28,7 +30,6 @@ public class ImageViewer extends JLabel implements PropertyChangeListener {
 		
 		setVerticalAlignment(JLabel.CENTER);
 	    setHorizontalAlignment(JLabel.CENTER);
-	    chooser.addPropertyChangeListener(this);
 	    setPreferredSize(new Dimension(240, 160));
 	    
 	    PREFERRED_WIDTH_RATIO = 0.35;
@@ -40,33 +41,37 @@ public class ImageViewer extends JLabel implements PropertyChangeListener {
 	public void propertyChange(PropertyChangeEvent arg0) {
 
 		if (arg0.getPropertyName().equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
-
-			File file = (File)arg0.getNewValue();
-			if (file != null) {
-				try {
-					ImageIcon icon = new ImageIcon(ImageIO.read(file));
-					if (icon.getIconWidth() > getPreferredWidth()) {
-						icon = new ImageIcon(
-								icon.getImage().getScaledInstance(getPreferredWidth(), -1, Image.SCALE_DEFAULT));
-						if (icon.getIconHeight() > getPreferredHeight()) {
-							icon = new ImageIcon(
-									icon.getImage().getScaledInstance(-1, getPreferredHeight(), Image.SCALE_DEFAULT));
-						}
-					}
-					setIcon(icon);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+			loadImage( (file = (File)arg0.getNewValue()) );
 		}
+		
 	}
 	
 	public void dialogSizeChange() {
 		
 		setPreferredSize(new Dimension(getPreferredWidth(), getPreferredHeight()));
+		loadImage(file);
 		
 	}
 	
+	private void loadImage(File f) {
+
+		try {
+			if (f == null) return;
+			BufferedImage bi = ImageIO.read(f);
+			if (bi == null) return;
+
+			ImageIcon icon = new ImageIcon(bi);
+			icon = new ImageIcon(icon.getImage().getScaledInstance(-1, getHeight(), Image.SCALE_DEFAULT));
+			if (icon.getIconWidth() > getPreferredWidth()) {
+				icon = new ImageIcon(icon.getImage().getScaledInstance(getWidth(), -1, Image.SCALE_DEFAULT));
+			}
+			setIcon(icon);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 	public int getPreferredWidth() {
 		return (int)(ch.getWidth() * PREFERRED_WIDTH_RATIO);
 	}

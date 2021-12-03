@@ -128,12 +128,13 @@ public class MailSender {
 		
 		JFileChooser chooser = new JFileChooser((new File(chooserLocation).exists()) ? chooserLocation : null);
 		
-		ImageViewer temp1 = new ImageViewer(chooser);
+		ImageViewer imageV = new ImageViewer(chooser);
 		chooser.setMultiSelectionEnabled(true);
-		chooser.setAccessory(temp1);
+		chooser.setAccessory(imageV);
+		chooser.addPropertyChangeListener(imageV);
 		chooser.addComponentListener(new ComponentAdapter() {
 		    public void componentResized(ComponentEvent e) {
-		    	temp1.dialogSizeChange();
+		    	imageV.dialogSizeChange();
 		    }
 		});
 		chooser.addChoosableFileFilter(new FileFilter() {
@@ -152,6 +153,7 @@ public class MailSender {
 			public String getDescription() {
 				return "Picture files (*.jpeg, *.jpg, *.png, *.bmp)";
 			}
+			
 		});
 		
 		chooser.addChoosableFileFilter(new FileFilter() {
