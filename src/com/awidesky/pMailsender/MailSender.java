@@ -5,10 +5,14 @@ import java.awt.event.ComponentEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.activation.DataHandler;
@@ -46,8 +50,6 @@ public class MailSender {
 	private static final Properties props = new Properties();
 	private static final Session session;
 	
-	private static ArrayList<File> files = new ArrayList<>();
-	
 	private static final JDialog dialog = new JDialog();
 	
 	
@@ -79,6 +81,7 @@ public class MailSender {
 		props.put("mail.smtp.port", port);
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.ssl.trust", host);
+		//mail.smtp.ssl.protocols TLSv1.2
 		props.put("mail.smtp.starttls.enable", "true");
 
 		session = Session.getDefaultInstance(props, new Authenticator() {
@@ -98,6 +101,24 @@ public class MailSender {
 		String title = "p";
 		String content = " ";
 
+		if (new File("lastTriedMailContent.txt").exists()) {
+			
+			final AtomicReference<Boolean> result = new AtomicReference<>();
+			SwingUtilities.invokeAndWait(() -> {
+				result.set(JOptionPane.showConfirmDialog(dialog, "Retry sending last saved mail?", "Last attempt wasn't successful!", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION);
+			});
+
+			if (result.get()) {
+				sendSavedMail();
+				return;
+			} else {
+				new File("lastTriedMailContent.txt").delete();
+				new File("lastTriedMailAttachment.txt").delete();
+			}
+		}
+		
+		ArrayList<File> files = new ArrayList<>();
+		
 		for (int i = 0; i < args.length; i++) {
 
 			if (args[i].startsWith("-title=")) {
@@ -195,33 +216,27 @@ public class MailSender {
 		
 		files = files.stream().distinct().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(ArrayList::new));
 		
-		send(title, content, files);
+		if (files.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limit)
 			
-	}
-	
-	public static void send(String title, String content, List<File> attatch) throws Exception {
-		
-		if (attatch.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limil)
-		
 			title += " + 링크(들)도 클릭";
 			List<File> dropboxed;
 			System.out.println("Mail attachment too big! (>10MB)");
 			System.out.println("Trying dropbox link instead..");
 			
-			dropboxed = attatch.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
+			dropboxed = files.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
 			if(dropboxed.size() != 0) {
-				attatch.removeAll(dropboxed);
+				files.removeAll(dropboxed);
 			}
 			
 			long totalSize = 0L;
-			for(int i = 0; i < attatch.size(); i++) {
+			for(int i = 0; i < files.size(); i++) {
 				
-				totalSize += attatch.get(i).length();
+				totalSize += files.get(i).length();
 				
 				if(totalSize >= attatchLimit) {
 					//No super big file(s), but still exceed limit.
 					
-					List<File> temp = attatch.subList(i, attatch.size());
+					List<File> temp = files.subList(i, files.size());
 					dropboxed.addAll(temp);
 					temp.clear();
 					
@@ -232,6 +247,77 @@ public class MailSender {
 			content += System.lineSeparator() + new DropboxFileUploader().uploadFileAndGetLink(dropboxed, "/document/");
 			
 		}
+		
+		try {
+			send(title, content, files);
+		} catch (Exception e) {
+			saveMail(title, content, files);
+			throw e;
+		}
+			
+	}
+
+	private static void sendSavedMail() throws Exception {
+		
+		BufferedReader br = new BufferedReader( new FileReader(new File("lastTriedMailContent.txt")));
+		String line = null, title;
+		List<String> content = new LinkedList<>();
+		
+		title = br.readLine();
+		
+		while((line = br.readLine()) != null) {
+			content.add(line); 
+		}
+		
+		br.close();
+		
+		send(title, content.stream().collect(Collectors.joining(System.lineSeparator())), getSavedAttatchment());
+		
+		new File("lastTriedMailContent.txt").delete();
+		new File("lastTriedMailAttachment.txt").delete();
+		
+	}
+
+	private static List<File> getSavedAttatchment() throws Exception {
+		
+		BufferedReader br = new BufferedReader( new FileReader(new File("lastTriedMailAttachment.txt")));
+		String line = null;
+		List<File> files = new LinkedList<>();
+		
+		while((line = br.readLine()) != null) {
+			files.add(new File(line)); 
+		}
+		
+		br.close();
+		
+		return files;
+		
+	}
+	
+	private static void saveMail(String title, String content, ArrayList<File> files) {
+		
+		try (PrintWriter pw1 = new PrintWriter(new File("lastTriedMailContent.txt"));
+				PrintWriter pw2 = new PrintWriter(new File("lastTriedMailAttachment.txt"))) {
+
+			pw1.println(title);
+			pw1.println(content);
+
+			files.stream().map(File::getAbsolutePath).forEach(pw2::println);
+
+		} catch (IOException e) {
+			
+			System.out.println();
+			System.err.println("Error when saving draft!!");
+			e.printStackTrace();
+			System.out.println();
+			
+		}
+		
+	}
+	
+	
+	
+	public static void send(String title, String content, List<File> attatch) throws Exception {
 		
 		try {
 		
