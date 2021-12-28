@@ -251,6 +251,9 @@ public class MailSender {
 		try {
 			send(title, content, files);
 		} catch (Exception e) {
+			SwingUtilities.invokeLater(() -> {
+				JOptionPane.showMessageDialog(dialog, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
+			});
 			saveMail(title, content, files);
 			throw e;
 		}
@@ -316,28 +319,25 @@ public class MailSender {
 	}
 	
 	
-	
 	public static void send(String title, String content, List<File> attatch) throws Exception {
-		
-		try {
-		
-			System.out.println("\tSetting Message Config...");
-			MimeMessage message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(user));
-			message.addRecipient(Message.RecipientType.TO, new InternetAddress(user));
-			message.setHeader("content-type", "text/html;charset=UTF-8");
-			message.setSubject(title);
-			
-			System.out.println("\tAdding Text Content Into Message...");
-			MimeBodyPart m1 = new MimeBodyPart();
-			m1.setText(content.replace("\\n", "\n"), "utf-8");
-			
-			Multipart mp = new MimeMultipart();
-			mp.addBodyPart(m1);
-			
-			System.out.println("\tAdding File Attachment Into Message...");
-			
-			for(File f : attatch) {
+
+		System.out.println("\tSetting Message Config...");
+		MimeMessage message = new MimeMessage(session);
+		message.setFrom(new InternetAddress(user));
+		message.addRecipient(Message.RecipientType.TO, new InternetAddress(user));
+		message.setHeader("content-type", "text/html;charset=UTF-8");
+		message.setSubject(title);
+
+		System.out.println("\tAdding Text Content Into Message...");
+		MimeBodyPart m1 = new MimeBodyPart();
+		m1.setText(content.replace("\\n", "\n"), "utf-8");
+
+		Multipart mp = new MimeMultipart();
+		mp.addBodyPart(m1);
+
+		System.out.println("\tAdding File Attachment Into Message...");
+
+		for (File f : attatch) {
 				
 				MimeBodyPart m2 = new MimeBodyPart();
 				m2.attachFile(f);
@@ -348,35 +348,22 @@ public class MailSender {
 				
 				mp.addBodyPart(m2);
 				
-			}
-			
-			message.setContent(mp, "text/html;charset=UTF-8");
-			
-			System.out.println("\tSending Message...");
-			Transport.send(message);
-			System.out.println("\nMessage Sent Successfully!");
-			SwingUtilities.invokeLater(() -> {
-				
-				JOptionPane.showMessageDialog(dialog, "Message Sent Successfully!", "Done!", JOptionPane.INFORMATION_MESSAGE);
-				dialog.dispose();
-				
-			});
-			
-		} catch (Exception e) {
-		
-			SwingUtilities.invokeLater(() -> {
-				
-				JOptionPane.showMessageDialog(dialog, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
-				e.printStackTrace();
-				dialog.dispose();
-				System.exit(1);
-				
-			});
-			
 		}
-
+			
+		message.setContent(mp, "text/html;charset=UTF-8");
+			
+		System.out.println("\tSending Message...");
+		Transport.send(message);
+		System.out.println("\nMessage Sent Successfully!");
+		SwingUtilities.invokeLater(() -> {
+				
+			JOptionPane.showMessageDialog(dialog, "Message Sent Successfully!", "Done!", JOptionPane.INFORMATION_MESSAGE);
+			dialog.dispose();
+				
+		});
 		
 	}
+	
 
 }
 
