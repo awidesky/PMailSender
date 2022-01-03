@@ -31,6 +31,7 @@ import javax.mail.internet.MimeUtility;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -59,7 +60,23 @@ public class MailSender {
 
 			host = br.readLine().substring(7);
 			user = br.readLine().substring(7);
-			password = br.readLine().substring(11);
+			if((password = br.readLine()).equals("password = ")) {
+				
+				System.out.println("Password is not set in config.txt!");
+				System.out.println("You should add password in config.txt or type it in console.");
+				
+				if (System.console() == null) {
+					final JPasswordField pf = new JPasswordField();
+					if (JOptionPane.showConfirmDialog(null, pf, "Enter password : ", JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+						password = String.valueOf(pf.getPassword());
+					} else { System.err.println("You didin't type password!"); System.exit(1); }
+				} else {
+					password = String.valueOf(System.console().readPassword("Enter password : "));
+				}
+				
+			} else {
+				password = password.substring(11);
+			}
 			port = br.readLine().substring(7);
 			chooserLocation = br.readLine().substring(18);
 
@@ -254,6 +271,7 @@ public class MailSender {
 		} catch (Exception e) {
 			SwingUtilities.invokeLater(() -> {
 				JOptionPane.showMessageDialog(dialog, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
+				dialog.dispose();
 			});
 			saveMail(title, content, files);
 			throw e;
@@ -299,7 +317,7 @@ public class MailSender {
 	}
 	
 	private static void saveMail(String title, String content, ArrayList<File> files) {
-		
+
 		try (PrintWriter pw1 = new PrintWriter(new File("lastTriedMailContent.txt"));
 				PrintWriter pw2 = new PrintWriter(new File("lastTriedMailAttachment.txt"))) {
 
@@ -316,7 +334,7 @@ public class MailSender {
 			System.out.println();
 			
 		}
-		
+
 	}
 	
 	
@@ -350,7 +368,7 @@ public class MailSender {
 				mp.addBodyPart(m2);
 				
 		}
-			
+		
 		message.setContent(mp, "text/html;charset=UTF-8");
 			
 		System.out.println("\tSending Message...");
