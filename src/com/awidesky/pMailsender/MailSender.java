@@ -81,6 +81,7 @@ public class MailSender {
 		props.put("mail.smtp.port", port);
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.ssl.trust", host);
+		props.put("mail.smtp.ssl.enable", "true");
 		//mail.smtp.ssl.protocols TLSv1.2
 		props.put("mail.smtp.starttls.enable", "true");
 
