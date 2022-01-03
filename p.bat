@@ -3,7 +3,7 @@
 :start
 
 if "%~1"=="" (
-  java -jar P,jar
+  java -jar P.jar
 ) else (
   java -jar P.jar -files %*
 )
