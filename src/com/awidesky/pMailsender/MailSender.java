@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,50 +43,118 @@ public class MailSender {
 	private static String user;
 	private static String password;
 	private static String port;
-	private static String chooserLocation;
+	private static String chooserLocation = ".";
+	
+	private static String title = "p";
+	private static String content = " ";
 	
 	private final static long attatchLimit = 10L * 1024 * 1024;
 	
 	private static final Properties props = new Properties();
-	private static final Session session;
+	private static Session session;
 	
 	private static final JDialog dialog = new JDialog();
+	private static JFileChooser chooser = new JFileChooser();
+	private static LinkedList<File> files = new LinkedList<>();
 	
-	
-	static { /* get email address and password */
-		
-		try (BufferedReader br = new BufferedReader(new FileReader(new File("config.txt")))) {
+	public static void main(String[] args) throws Exception {
 
-			host = br.readLine().substring(7);
-			user = br.readLine().substring(7);
-			if((password = br.readLine()).equals("password = ")) {
+		config(args);
+		setUI();
+		setSession();
+		if(checkLastAttempt()) return;
+		
+		System.out.println("Running...");
+		
+		File startPath = new File(chooserLocation);
+		while (true) {
+			
+			StringBuilder sb = new StringBuilder("");
+			chooser.setCurrentDirectory(startPath);
+			if (chooser.showOpenDialog(dialog) != JFileChooser.APPROVE_OPTION) break;
+			List<File> temp = Arrays.asList(chooser.getSelectedFiles());
+			startPath = temp.get(temp.size() - 1);
+			files.addAll(temp);
+			files.stream().forEach((f) -> sb.append(f.getAbsolutePath()).append("\n"));
+			System.out.println("Selected files : \n" + sb.toString() + "\n");
+		
+		}
+
+		dialog.dispose();
+		
+		files = files.stream().distinct().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(LinkedList::new));
+		
+		if (files.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limit)
+			
+			title += " + 링크(들)도 클릭";
+			List<File> dropboxed;
+			System.out.println("Mail attachment too big! (>10MB)");
+			System.out.println("Trying dropbox link instead..");
+			
+			dropboxed = files.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
+			if(dropboxed.size() != 0) {
+				files.removeAll(dropboxed);
+			}
+			
+			long totalSize = 0L;
+			for(int i = 0; i < files.size(); i++) {
 				
-				System.out.println("Password is not set in config.txt!");
-				System.out.println("You should add password in config.txt or type it in console.");
+				totalSize += files.get(i).length();
 				
-				if (System.console() == null) {
-					final JPasswordField pf = new JPasswordField();
-					if (JOptionPane.showConfirmDialog(null, pf, "Enter password : ", JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
-						password = String.valueOf(pf.getPassword());
-					} else { System.err.println("You didin't type password!"); System.exit(1); }
-				} else {
-					password = String.valueOf(System.console().readPassword("Enter password : "));
+				if(totalSize >= attatchLimit) {
+					//No super big file(s), but still exceed limit.
+					
+					List<File> temp = files.subList(i, files.size());
+					dropboxed.addAll(temp);
+					temp.clear();
+					
 				}
 				
-			} else {
-				password = password.substring(11);
 			}
-			port = br.readLine().substring(7);
-			chooserLocation = br.readLine().substring(18);
-
-		} catch (Exception e1) {
-			e1.printStackTrace();
-			System.exit(1);
+			
+			content += System.lineSeparator() + new DropboxFileUploader().uploadFileAndGetLink(dropboxed, "/document/");
+			
 		}
 		
-	}
+		try {
+			send(title, content, files);
+		} catch (Exception e) {
+			SwingUtilities.invokeLater(() -> {
+				JOptionPane.showMessageDialog(dialog, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
+				dialog.dispose();
+			});
+			saveMail(title, content, files);
+			throw e;
+		}
+			
 	
-	static { /* set JavaMail configurations */
+	}
+	/**
+	 * 
+	 * @return <code>true</code> when last saved mail is sent.
+	 * */
+	private static boolean checkLastAttempt() throws Exception {
+		
+		if (new File("lastTriedMailContent.txt").exists()) {
+			
+			final AtomicReference<Boolean> result = new AtomicReference<>();
+			SwingUtilities.invokeAndWait(() -> {
+				result.set(JOptionPane.showConfirmDialog(dialog, "Retry sending last saved mail?", "Last attempt wasn't successful!", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION);
+			});
+
+			if (result.get()) {
+				sendSavedMail();
+				return true;
+			} else {
+				new File("lastTriedMailContent.txt").delete();
+				new File("lastTriedMailAttachment.txt").delete();
+			}
+		}
+		return false;
+		
+	}
+
+	private static void setSession() {
 		
 		System.out.println("Preparing session...");
 		
@@ -111,61 +178,19 @@ public class MailSender {
 			}
 			
 		});
-		
 	}
 	
-	public static void main(String[] args) throws Exception {
-
-		String title = "p";
-		String content = " ";
-
-		if (new File("lastTriedMailContent.txt").exists()) {
-			
-			final AtomicReference<Boolean> result = new AtomicReference<>();
-			SwingUtilities.invokeAndWait(() -> {
-				result.set(JOptionPane.showConfirmDialog(dialog, "Retry sending last saved mail?", "Last attempt wasn't successful!", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION);
-			});
-
-			if (result.get()) {
-				sendSavedMail();
-				return;
-			} else {
-				new File("lastTriedMailContent.txt").delete();
-				new File("lastTriedMailAttachment.txt").delete();
-			}
-		}
+	private static void setUI() {
 		
-		ArrayList<File> files = new ArrayList<>();
-		
-		for (int i = 0; i < args.length; i++) {
-
-			if (args[i].startsWith("-title=")) {
-				title = args[i].replace("-title=", "");
-			}
-
-			if (args[i].startsWith("-content=")) {
-				content = args[i].replace("-content=", "");
-			}
-
-			if (args[i].equals("-files")) {
-				files.addAll(Arrays.asList(args).subList(i + 1, args.length).stream().map(File::new)
-						.collect(Collectors.toList()));
-				break;
-			}
-		}
-
-			System.out.println("Preparing UI...");
+		System.out.println("Preparing UI...");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 				| UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-		
-		
+
 		dialog.setAlwaysOnTop(true);
-		
-		JFileChooser chooser = new JFileChooser((new File(chooserLocation).exists()) ? chooserLocation : null);
 		
 		ImageViewer imageV = new ImageViewer(chooser);
 		chooser.setMultiSelectionEnabled(true);
@@ -214,71 +239,60 @@ public class MailSender {
 			}
 		});
 		
-		System.out.println("Running...");
+	}
+	
+	private static void config(String[] args) {
 		
-		File startPath = new File(chooserLocation);
-		while (true) {
-			
-			StringBuilder sb = new StringBuilder("");
-			chooser.setCurrentDirectory(startPath);
-			if (chooser.showOpenDialog(dialog) != JFileChooser.APPROVE_OPTION) break;
-			List<File> temp = Arrays.asList(chooser.getSelectedFiles());
-			startPath = temp.get(temp.size() - 1);
-			files.addAll(temp);
-			files.stream().forEach((f) -> sb.append(f.getAbsolutePath()).append("\n"));
-			System.out.println("Selected files : \n" + sb.toString() + "\n");
-		
-		}
+		System.out.println("Reading arguments and config files...");
 
-		dialog.dispose();
-		
-		files = files.stream().distinct().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(ArrayList::new));
-		
-		if (files.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limit)
-			
-			title += " + 링크(들)도 클릭";
-			List<File> dropboxed;
-			System.out.println("Mail attachment too big! (>10MB)");
-			System.out.println("Trying dropbox link instead..");
-			
-			dropboxed = files.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
-			if(dropboxed.size() != 0) {
-				files.removeAll(dropboxed);
-			}
-			
-			long totalSize = 0L;
-			for(int i = 0; i < files.size(); i++) {
+		try (BufferedReader br = new BufferedReader(new FileReader(new File("config.txt")))) {
+
+			host = br.readLine().substring(7);
+			user = br.readLine().substring(7);
+			if((password = br.readLine()).equals("password = ")) {
 				
-				totalSize += files.get(i).length();
+				System.out.println("Password is not set in config.txt!");
+				System.out.println("You should add password in config.txt or type it in console.");
 				
-				if(totalSize >= attatchLimit) {
-					//No super big file(s), but still exceed limit.
-					
-					List<File> temp = files.subList(i, files.size());
-					dropboxed.addAll(temp);
-					temp.clear();
-					
+				if (System.console() == null) {
+					final JPasswordField pf = new JPasswordField();
+					if (JOptionPane.showConfirmDialog(null, pf, "Enter password : ", JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+						password = String.valueOf(pf.getPassword());
+					} else { System.err.println("You didin't type password!"); System.exit(1); }
+				} else {
+					password = String.valueOf(System.console().readPassword("Enter password : "));
 				}
 				
+			} else {
+				password = password.substring(11);
 			}
-			
-			content += System.lineSeparator() + new DropboxFileUploader().uploadFileAndGetLink(dropboxed, "/document/");
-			
+			port = br.readLine().substring(7);
+			chooserLocation = br.readLine().substring(18);
+
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			System.exit(1);
 		}
 		
-		try {
-			send(title, content, files);
-		} catch (Exception e) {
-			SwingUtilities.invokeLater(() -> {
-				JOptionPane.showMessageDialog(dialog, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
-				dialog.dispose();
-			});
-			saveMail(title, content, files);
-			throw e;
-		}
-			
-	}
+		for (int i = 0; i < args.length; i++) {
 
+			if (args[i].startsWith("-title=")) {
+				title = args[i].replace("-title=", "");
+			}
+
+			if (args[i].startsWith("-content=")) {
+				content = args[i].replace("-content=", "");
+			}
+
+			if (args[i].equals("-files")) {
+				files.addAll(Arrays.asList(args).subList(i + 1, args.length).stream().map(File::new)
+						.collect(Collectors.toList()));
+				break;
+			}
+		}
+		
+	}
+		
 	private static void sendSavedMail() throws Exception {
 		
 		BufferedReader br = new BufferedReader( new FileReader(new File("lastTriedMailContent.txt")));
@@ -293,18 +307,19 @@ public class MailSender {
 		
 		br.close();
 		
-		send(title, content.stream().collect(Collectors.joining(System.lineSeparator())), getSavedAttatchment());
+		setSavedAttatchment();
+		send(title, content.stream().collect(Collectors.joining(System.lineSeparator())), files);
 		
 		new File("lastTriedMailContent.txt").delete();
 		new File("lastTriedMailAttachment.txt").delete();
 		
 	}
 
-	private static List<File> getSavedAttatchment() throws Exception {
+	private static void setSavedAttatchment() throws Exception {
 		
 		BufferedReader br = new BufferedReader( new FileReader(new File("lastTriedMailAttachment.txt")));
 		String line = null;
-		List<File> files = new LinkedList<>();
+		files = new LinkedList<>();
 		
 		while((line = br.readLine()) != null) {
 			files.add(new File(line)); 
@@ -312,11 +327,9 @@ public class MailSender {
 		
 		br.close();
 		
-		return files;
-		
 	}
 	
-	private static void saveMail(String title, String content, ArrayList<File> files) {
+	private static void saveMail(String title, String content, LinkedList<File> files2) {
 
 		try (PrintWriter pw1 = new PrintWriter(new File("lastTriedMailContent.txt"));
 				PrintWriter pw2 = new PrintWriter(new File("lastTriedMailAttachment.txt"))) {
@@ -324,7 +337,7 @@ public class MailSender {
 			pw1.println(title);
 			pw1.println(content);
 
-			files.stream().map(File::getAbsolutePath).forEach(pw2::println);
+			files2.stream().map(File::getAbsolutePath).forEach(pw2::println);
 
 		} catch (IOException e) {
 			
