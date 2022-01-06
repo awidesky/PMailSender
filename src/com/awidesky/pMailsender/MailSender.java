@@ -53,14 +53,14 @@ public class MailSender {
 	private static final Properties props = new Properties();
 	private static Session session;
 	
-	private static final JDialog dialog = new JDialog();
+	private static JDialog dialog;
 	private static JFileChooser chooser = new JFileChooser();
 	private static LinkedList<File> files = new LinkedList<>();
 	
 	public static void main(String[] args) throws Exception {
 
-		config(args);
 		setUI();
+		config(args);
 		setSession();
 		if(checkLastAttempt()) return;
 		
@@ -190,6 +190,7 @@ public class MailSender {
 			e.printStackTrace();
 		}
 
+		dialog = new JDialog();
 		dialog.setAlwaysOnTop(true);
 		
 		ImageViewer imageV = new ImageViewer(chooser);
@@ -256,7 +257,7 @@ public class MailSender {
 				
 				if (System.console() == null) {
 					final JPasswordField pf = new JPasswordField();
-					if (JOptionPane.showConfirmDialog(null, pf, "Enter password : ", JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+					if (JOptionPane.showConfirmDialog(dialog, pf, "Enter password : ", JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
 						password = String.valueOf(pf.getPassword());
 					} else { System.err.println("You didin't type password!"); System.exit(1); }
 				} else {
