@@ -54,7 +54,7 @@ public class MailSender {
 	private static Session session;
 	
 	private static JDialog dialog;
-	private static JFileChooser chooser = new JFileChooser();
+	private static JFileChooser chooser;
 	private static LinkedList<File> files = new LinkedList<>();
 	
 	public static void main(String[] args) throws Exception {
@@ -193,6 +193,7 @@ public class MailSender {
 		dialog = new JDialog();
 		dialog.setAlwaysOnTop(true);
 		
+		chooser = new JFileChooser();
 		ImageViewer imageV = new ImageViewer(chooser);
 		chooser.setMultiSelectionEnabled(true);
 		chooser.setAccessory(imageV);

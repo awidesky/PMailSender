@@ -24,7 +24,7 @@ public class ImageViewer extends JLabel implements PropertyChangeListener {
 	private JFileChooser ch;
 	private File file = null;
 	
-	public  ImageViewer(JFileChooser chooser) {
+	public ImageViewer(JFileChooser chooser) {
 
 		ch = chooser;
 		
