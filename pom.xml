@@ -3,6 +3,10 @@
   <groupId>com.awidesky</groupId>
   <artifactId>pMailSender</artifactId>
   <version>1.1-SNAPSHOT</version>
+  	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
