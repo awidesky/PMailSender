@@ -5,6 +5,7 @@
 	<groupId>com.awidesky</groupId>
 	<artifactId>PMailSender</artifactId>
 	<version>1.7</version>
+	<name>pMailSender</name>
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -26,41 +27,6 @@
 		</resources>
 		<plugins>
 			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<release>8</release>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.3.1</version>
-				<executions>
-					<execution>
-						<id>copy-resource-one</id>
-						<phase>install</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${project.basedir}</directory>
-									<includes>
-										<include>config.txt</include>
-										<include>dropboxAuth.txt</include>
-										<include>p custom.bat</include>
-										<include>p.bat</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.3.0</version>
@@ -81,6 +47,8 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
+					<appendAssemblyId>false</appendAssemblyId>
+					<finalName>PMailSender</finalName>
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
@@ -94,6 +62,65 @@
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<executions>
+					<execution>
+						<id>copy-resource-for-jpackage</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/app-image</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}</directory>
+									<includes>
+										<include>config.txt</include>
+										<include>dropboxAuth.txt</include>
+										<include>p custom.bat</include>
+										<include>p.bat</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>PMailSender.jar</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.panteleyev</groupId>
+				<artifactId>jpackage-maven-plugin</artifactId>
+				<version>1.4.0</version>
+				<configuration>
+					<input>${project.build.directory}/app-image</input>
+					<destination>${project.build.directory}</destination>
+					<mainJar>${project.build.directory}/app-image/PMailSender.jar</mainJar>
+					<mainClass>com.awidesky.pMailsender.MailSender</mainClass>
+					<name>PMailSender</name>
+					<vendor>Eugene Hong</vendor>
+					<appVersion>${project.version}</appVersion>
+					<licenseFile>${basedir}/LICENSE</licenseFile>
+					<copyright>Copyright (c) 2021-2023 Eugene Hong. All Rights Reserved.</copyright>
+				</configuration>
+				<executions>
+					<execution>
+						<id>jpackage-with-no-resource</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jpackage</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -114,6 +141,5 @@
 			<artifactId>dropbox-core-sdk</artifactId>
 			<version>4.0.1</version>
 		</dependency>
-
 	</dependencies>
 </project>
