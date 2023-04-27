@@ -3,9 +3,9 @@
 :start
 
 if "%~1"=="" (
-  java -jar P.jar
+  java -jar PMailSender.jar
 ) else (
-  java -jar P.jar -files %*
+  java -jar PMailSender.jar -files %*
 )
 
 if %errorlevel% == 1 (
