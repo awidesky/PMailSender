@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project PMailSender with Jar-in-Jar Loader">
+<project default="deploy" name="Create Runnable Jar for Project PMailSender with Jar-in-Jar Loader">
     <!--this file was created by Eclipse Runnable JAR file Export Wizard-->
     <!--ANT 1.7 is required-->
     <!--define folder properties-->
     <property name="dir.buildfile" value="."/>
     <property name="dir.workspace" value="${dir.buildfile}/.."/>
     <property name="dir.jarfile" value="${dir.buildfile}/build"/>
-    <target name="create_run_jar">
-        <jar destfile="${dir.jarfile}/PMailSender-1.1.jar">
+	
+	<target name="clean">
+		<delete dir="${dir.buildfile}/build"/>
+	</target>
+			
+    <target depends="clean" name="create_run_jar">
+        <jar destfile="${dir.jarfile}/PMailSender.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="com.awidesky.pMailsender.MailSender"/>
@@ -22,4 +27,19 @@
             <zipfileset dir="C:/Users/CKIRUser/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.7.4" includes="jackson-core-2.7.4.jar"/>
         </jar>
     </target>
+	
+	<target depends="create_run_jar" name="pack_jar">
+
+		<copy todir="${dir.jarfile}">
+			<fileset dir="${dir.buildfile}">
+				<include name="config.txt"/>
+				<include name="dropboxAuth.txt"/>
+				<include name="p custom.bat"/>
+				<include name="p.bat"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target depends="pack_jar" name="deploy"/>
+	
 </project>
