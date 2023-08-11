@@ -93,6 +93,7 @@ local.properties
 hs_err_pid*
 replay_pid*
 
+<<<<<<< HEAD
 ### macOS ###
 # General
 .DS_Store
@@ -172,3 +173,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/java,eclipse,windows,macos,maven
+=======
+# End of https://www.toptal.com/developers/gitignore/api/java,eclipse
+
+>>>>>>> 4959d83 (ignore build file too)
