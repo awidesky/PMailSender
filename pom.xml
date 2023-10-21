@@ -1,15 +1,18 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.awidesky</groupId>
-	<artifactId>pMailSender</artifactId>
+	<artifactId>PMailSender</artifactId>
 	<version>1.6</version>
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		
+
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		
+		<main.class>com.awidesky.pMailsender.MailSender</main.class>
 	</properties>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -30,21 +33,67 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<!-- TODO : Maybe just bundle all dependency in jar and copy some files through maven? -->
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>3.1.0</version>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
 				<executions>
 					<execution>
+						<id>copy-resource-one</id>
 						<phase>install</phase>
-						<configuration>
-							<target>
-								<ant antfile="${basedir}/build.xml">
-									<target name="deploy" />
-								</ant>
-							</target>
-						</configuration>
 						<goals>
-							<goal>run</goal>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}</directory>
+									<includes>
+										<include>config.txt</include>
+										<include>dropboxAuth.txt</include>
+										<include>p custom.bat</include>
+										<include>p.bat</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>com.awidesky.pMailsender.MailSender</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.6.0</version>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>com.awidesky.pMailsender.MailSender</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<id>assemble-all</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -58,7 +107,8 @@
 			<artifactId>jakarta.mail</artifactId>
 			<version>1.6.7</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.dropbox.core/dropbox-core-sdk -->
+		<!--
+		https://mvnrepository.com/artifact/com.dropbox.core/dropbox-core-sdk -->
 		<dependency>
 			<groupId>com.dropbox.core</groupId>
 			<artifactId>dropbox-core-sdk</artifactId>
