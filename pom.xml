@@ -142,4 +142,27 @@
 			<version>4.0.1</version>
 		</dependency>
 	</dependencies>
+	<profiles>
+		<profile>
+			<id>platform-windows</id>
+			<activation>
+				<os>
+					<family>windows</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.panteleyev</groupId>
+						<artifactId>jpackage-maven-plugin</artifactId>
+						<version>1.4.0</version>
+						<configuration>
+							<winConsole>true</winConsole>
+							<winDirChooser>true</winDirChooser>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
