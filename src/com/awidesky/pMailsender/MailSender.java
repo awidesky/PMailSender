@@ -59,10 +59,10 @@ public class MailSender {
 	
 	public static void main(String[] args) throws Exception {
 
-		setUI();
 		config(args);
 		setSession();
 		if(checkLastAttempt()) return;
+		setGUI();
 		
 		System.out.println("Running...");
 		
@@ -180,9 +180,9 @@ public class MailSender {
 		});
 	}
 	
-	private static void setUI() {
+	private static void setGUI() {
 		
-		System.out.println("Preparing UI...");
+		System.out.println("Preparing GUI...");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
