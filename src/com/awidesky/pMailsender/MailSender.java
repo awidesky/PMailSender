@@ -1,7 +1,5 @@
 package com.awidesky.pMailsender;
 
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -11,7 +9,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.activation.DataHandler;
@@ -27,25 +24,18 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JPasswordField;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.filechooser.FileFilter;
 
 
 public class MailSender {
 
 	private static String host;
 	private static String user;
-	private static String password;
+	private static char[] password;
 	private static String port;
 	private static String chooserLocation = ".";
 	
-	private static String title = "p";
+	private static String title = "P";
 	private static String content = " ";
 	
 	private final static long attatchLimit = 10L * 1024 * 1024;
@@ -53,34 +43,23 @@ public class MailSender {
 	private static final Properties props = new Properties();
 	private static Session session;
 	
-	private static JDialog dialog;
-	private static JFileChooser chooser;
-	private static LinkedList<File> files = new LinkedList<>();
+	private static MainFrame mainFrame = new MainFrame(title, content);
+	private static List<File> files = new LinkedList<>();
 	
 	public static void main(String[] args) throws Exception {
 
+		SwingUtilities.invokeLater(mainFrame::setUp);;
 		config(args);
 		setSession();
 		if(checkLastAttempt()) return;
-		setGUI();
 		
-		System.out.println("Running...");
+		mainFrame.log("Running...");
 		
 		File startPath = new File(chooserLocation);
-		while (true) {
-			
-			StringBuilder sb = new StringBuilder("");
-			chooser.setCurrentDirectory(startPath);
-			if (chooser.showOpenDialog(dialog) != JFileChooser.APPROVE_OPTION) break;
-			List<File> temp = Arrays.asList(chooser.getSelectedFiles());
-			startPath = temp.get(temp.size() - 1);
-			files.addAll(temp);
-			files.stream().forEach((f) -> sb.append(f.getAbsolutePath()).append("\n"));
-			System.out.println("Selected files : \n" + sb.toString() + "\n");
+		files = mainFrame.chooseLoop(startPath);
 		
-		}
-
-		dialog.dispose();
+		title = mainFrame.getTitle();
+		content = mainFrame.getContent();
 		
 		files = files.stream().distinct().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(LinkedList::new));
 		
@@ -88,8 +67,8 @@ public class MailSender {
 			
 			title += " + 링크(들)도 클릭";
 			List<File> dropboxed;
-			System.out.println("Mail attachment too big! (>10MB)");
-			System.out.println("Trying dropbox link instead..");
+			mainFrame.log("Mail attachment too big! (>10MB)");
+			mainFrame.log("Trying dropbox link instead..");
 			
 			dropboxed = files.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
 			if(dropboxed.size() != 0) {
@@ -119,10 +98,7 @@ public class MailSender {
 		try {
 			send(title, content, files);
 		} catch (Exception e) {
-			SwingUtilities.invokeLater(() -> {
-				JOptionPane.showMessageDialog(dialog, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
-				dialog.dispose();
-			});
+			mainFrame.error("Error!", e.getMessage());
 			saveMail(title, content, files);
 			throw e;
 		}
@@ -132,17 +108,13 @@ public class MailSender {
 	/**
 	 * 
 	 * @return <code>true</code> when last saved mail is sent.
+	 * @throws Exception When failed during sending mail.
 	 * */
 	private static boolean checkLastAttempt() throws Exception {
 		
 		if (new File("lastTriedMailContent.txt").exists()) {
 			
-			final AtomicReference<Boolean> result = new AtomicReference<>();
-			SwingUtilities.invokeAndWait(() -> {
-				result.set(JOptionPane.showConfirmDialog(dialog, "Retry sending last saved mail?", "Last attempt wasn't successful!", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION);
-			});
-
-			if (result.get()) {
+			if (mainFrame.confirm("Retry sending last saved mail?", "Last attempt wasn't successful!")) {
 				sendSavedMail();
 				return true;
 			} else {
@@ -156,7 +128,7 @@ public class MailSender {
 
 	private static void setSession() {
 		
-		System.out.println("Preparing session...");
+		mainFrame.log("Preparing session...");
 		
 		System.setProperty("mail.mime.splitlongparameters", "false");
 		
@@ -169,110 +141,35 @@ public class MailSender {
 		//mail.smtp.ssl.protocols TLSv1.2
 		props.put("mail.smtp.starttls.enable", "true");
 
-		session = Session.getDefaultInstance(props, new Authenticator() {
-			
+		session = Session.getInstance(props, new Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
-			
-				return new PasswordAuthentication(user, password);
-				
+				return new PasswordAuthentication(user, String.valueOf(password));
 			}
-			
 		});
 	}
 	
-	private static void setGUI() {
-		
-		System.out.println("Preparing GUI...");
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-				| UnsupportedLookAndFeelException e) {
-			e.printStackTrace();
-		}
-
-		dialog = new JDialog();
-		dialog.setAlwaysOnTop(true);
-		
-		chooser = new JFileChooser();
-		ImageViewer imageV = new ImageViewer(chooser);
-		chooser.setMultiSelectionEnabled(true);
-		chooser.setAccessory(imageV);
-		chooser.addPropertyChangeListener(imageV);
-		chooser.addComponentListener(new ComponentAdapter() {
-		    public void componentResized(ComponentEvent e) {
-		    	imageV.dialogSizeChange();
-		    }
-		});
-		chooser.addChoosableFileFilter(new FileFilter() {
-			
-			public boolean accept(File f) {
-				if (f.isDirectory()
-						|| f.getName().endsWith(".jpeg")
-						|| f.getName().endsWith(".jpg")
-						|| f.getName().endsWith(".bmp")
-						|| f.getName().endsWith(".png"))
-					return true;
-				else
-					return false;
-			}
-
-			public String getDescription() {
-				return "Picture files (*.jpeg, *.jpg, *.png, *.bmp)";
-			}
-			
-		});
-		
-		chooser.addChoosableFileFilter(new FileFilter() {
-			
-			public boolean accept(File f) {
-				if (f.isDirectory()
-						|| f.getName().endsWith(".pdf")
-						|| f.getName().endsWith(".docx")
-						|| f.getName().endsWith(".hwp")
-						|| f.getName().endsWith(".xlsx")
-						|| f.getName().endsWith(".pptx"))
-					return true;
-				else
-					return false;
-			}
-
-			public String getDescription() {
-				return "Document files (*.pdf, *.docx, *.hwp, *.xlsx, *.pptx)";
-			}
-		});
-		
-	}
 	
 	private static void config(String[] args) {
 		
-		System.out.println("Reading arguments and config files...");
+		mainFrame.log("Reading arguments and config files...");
 
 		try (BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getProjectPath() + "config.txt")))) {
 
 			host = br.readLine().substring(7);
 			user = br.readLine().substring(7);
-			if((password = br.readLine()).equals("password = ")) {
-				
-				System.out.println("Password is not set in config.txt!");
-				System.out.println("You should add password in config.txt or type it in console.");
-				
-				if (System.console() == null) {
-					final JPasswordField pf = new JPasswordField();
-					if (JOptionPane.showConfirmDialog(dialog, pf, "Enter password : ", JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
-						password = String.valueOf(pf.getPassword());
-					} else { System.err.println("You didin't type password!"); System.exit(1); }
-				} else {
-					password = String.valueOf(System.console().readPassword("Enter password : "));
-				}
-				
+			char[] buf = new char[256];
+			int read = br.read(buf);
+			if(buf.length <= 11 || read != buf.length) {
+				mainFrame.log("Password is not set in config.txt or too long!");
+				password = mainFrame.inputPassword();
 			} else {
-				password = password.substring(11);
+				password = Arrays.copyOfRange(buf, 11, buf.length);
 			}
 			port = br.readLine().substring(7);
 			chooserLocation = br.readLine().substring(18);
 
 		} catch (Exception e1) {
-			e1.printStackTrace();
+			mainFrame.log(e1);
 			System.exit(1);
 		}
 		
@@ -331,7 +228,7 @@ public class MailSender {
 		
 	}
 	
-	private static void saveMail(String title, String content, LinkedList<File> files2) {
+	private static void saveMail(String title, String content, List<File> files2) {
 
 		try (PrintWriter pw1 = new PrintWriter(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailContent.txt"));
 				PrintWriter pw2 = new PrintWriter(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailAttachment.txt"))) {
@@ -343,10 +240,10 @@ public class MailSender {
 
 		} catch (IOException e) {
 			
-			System.out.println();
-			System.err.println("Error when saving draft!!");
-			e.printStackTrace();
-			System.out.println();
+			mainFrame.log();
+			mainFrame.log("Error when saving draft!!");
+			mainFrame.log(e);
+			mainFrame.log();
 			
 		}
 
@@ -355,21 +252,21 @@ public class MailSender {
 	
 	public static void send(String title, String content, List<File> attatch) throws Exception {
 
-		System.out.println("\tSetting Message Config...");
+		mainFrame.log("\tSetting Message Config...");
 		MimeMessage message = new MimeMessage(session);
 		message.setFrom(new InternetAddress(user));
 		message.addRecipient(Message.RecipientType.TO, new InternetAddress(user));
 		message.setHeader("content-type", "text/html;charset=UTF-8");
 		message.setSubject(title);
 
-		System.out.println("\tAdding Text Content Into Message...");
+		mainFrame.log("\tAdding Text Content Into Message...");
 		MimeBodyPart m1 = new MimeBodyPart();
 		m1.setText(content.replace("\\n", "\n"), "utf-8");
 
 		Multipart mp = new MimeMultipart();
 		mp.addBodyPart(m1);
 
-		System.out.println("\tAdding File Attachment Into Message...");
+		mainFrame.log("\tAdding File Attachment Into Message...");
 
 		for (File f : attatch) {
 				
@@ -386,16 +283,10 @@ public class MailSender {
 		
 		message.setContent(mp, "text/html;charset=UTF-8");
 			
-		System.out.println("\tSending Message...");
+		mainFrame.log("\tSending Message...");
 		Transport.send(message);
-		System.out.println("\nMessage Sent Successfully!");
-		SwingUtilities.invokeLater(() -> {
-				
-			JOptionPane.showMessageDialog(dialog, "Message Sent Successfully!", "Done!", JOptionPane.INFORMATION_MESSAGE);
-			dialog.dispose();
-				
-		});
-		
+		mainFrame.log("\nMessage Sent Successfully!");
+		mainFrame.inform("Message Sent Successfully!", "Done!");
 	}
 	
 
