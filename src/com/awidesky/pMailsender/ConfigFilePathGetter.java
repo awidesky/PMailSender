@@ -13,7 +13,7 @@ import java.util.stream.Stream;
  * */
 public class ConfigFilePathGetter {
 
-	public static String getConfigFile() {
+	public static String getProjectPath() {
 		
 		return Stream.of(
 					classLocationBased(), 
@@ -29,9 +29,11 @@ public class ConfigFilePathGetter {
 					return ret;
 				}).map(s -> new File(s + File.separator + "config.txt"))
 				.filter(File::exists)
+				.map(File::getParentFile)
 				.map(File::getAbsolutePath)
 				.findFirst()
-				.orElse(".");
+				.orElse(".")
+				+ File.separator;
 	}
 	
 	

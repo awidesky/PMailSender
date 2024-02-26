@@ -247,7 +247,7 @@ public class MailSender {
 		
 		System.out.println("Reading arguments and config files...");
 
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getConfigFile())))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getProjectPath() + "config.txt")))) {
 
 			host = br.readLine().substring(7);
 			user = br.readLine().substring(7);
@@ -297,7 +297,7 @@ public class MailSender {
 		
 	private static void sendSavedMail() throws Exception {
 		
-		BufferedReader br = new BufferedReader( new FileReader(new File("lastTriedMailContent.txt")));
+		BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailContent.txt")));
 		String line = null, title;
 		List<String> content = new LinkedList<>();
 		
@@ -312,14 +312,14 @@ public class MailSender {
 		setSavedAttatchment();
 		send(title, content.stream().collect(Collectors.joining(System.lineSeparator())), files);
 		
-		new File("lastTriedMailContent.txt").delete();
-		new File("lastTriedMailAttachment.txt").delete();
+		new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailContent.txt").delete();
+		new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailAttachment.txt").delete();
 		
 	}
 
 	private static void setSavedAttatchment() throws Exception {
 		
-		BufferedReader br = new BufferedReader( new FileReader(new File("lastTriedMailAttachment.txt")));
+		BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailAttachment.txt")));
 		String line = null;
 		files = new LinkedList<>();
 		
@@ -333,8 +333,8 @@ public class MailSender {
 	
 	private static void saveMail(String title, String content, LinkedList<File> files2) {
 
-		try (PrintWriter pw1 = new PrintWriter(new File("lastTriedMailContent.txt"));
-				PrintWriter pw2 = new PrintWriter(new File("lastTriedMailAttachment.txt"))) {
+		try (PrintWriter pw1 = new PrintWriter(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailContent.txt"));
+				PrintWriter pw2 = new PrintWriter(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailAttachment.txt"))) {
 
 			pw1.println(title);
 			pw1.println(content);
