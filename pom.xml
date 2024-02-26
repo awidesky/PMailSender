@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.awidesky</groupId>
 	<artifactId>PMailSender</artifactId>
-	<version>1.7</version>
+	<version>1.7.0</version>
 	<name>pMailSender</name>
 	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -106,7 +106,8 @@
 				<version>1.4.0</version>
 				<configuration>
 					<input>${project.build.directory}/app-image</input>
-					<destination>${project.build.directory}</destination>
+					<destination>${project.basedir}/build</destination>
+					<addModules>java.desktop</addModules>
 					<mainJar>${project.build.directory}/app-image/PMailSender.jar</mainJar>
 					<mainClass>com.awidesky.pMailsender.MailSender</mainClass>
 					<name>PMailSender</name>
@@ -157,8 +158,8 @@
 						<artifactId>jpackage-maven-plugin</artifactId>
 						<version>1.4.0</version>
 						<configuration>
-							<winConsole>true</winConsole>
-							<winDirChooser>true</winDirChooser>
+							<winMenu>true</winMenu>
+							<winShortcut>true</winShortcut>
 						</configuration>
 					</plugin>
 				</plugins>
