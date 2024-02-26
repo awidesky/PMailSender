@@ -247,7 +247,7 @@ public class MailSender {
 		
 		System.out.println("Reading arguments and config files...");
 
-		try (BufferedReader br = new BufferedReader(new FileReader(new File("config.txt")))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getConfigFile())))) {
 
 			host = br.readLine().substring(7);
 			user = br.readLine().substring(7);
