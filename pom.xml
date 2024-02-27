@@ -106,7 +106,7 @@
 				<version>1.4.0</version>
 				<configuration>
 					<input>${project.build.directory}/app-image</input>
-					<destination>${project.basedir}/build</destination>
+					<destination>${project.build.directory}/build</destination>
 					<addModules>java.desktop</addModules>
 					<mainJar>${project.build.directory}/app-image/PMailSender.jar</mainJar>
 					<mainClass>com.awidesky.pMailsender.MailSender</mainClass>
