@@ -81,15 +81,6 @@
 							<outputDirectory>${project.build.directory}/app-image</outputDirectory>
 							<resources>
 								<resource>
-									<directory>${project.basedir}</directory>
-									<includes>
-										<include>config.txt</include>
-										<include>dropboxAuth.txt</include>
-										<include>p custom.bat</include>
-										<include>p.bat</include>
-									</includes>
-								</resource>
-								<resource>
 									<directory>${project.build.directory}</directory>
 									<includes>
 										<include>PMailSender.jar</include>
