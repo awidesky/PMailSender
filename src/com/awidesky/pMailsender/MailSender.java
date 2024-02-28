@@ -42,7 +42,7 @@ public class MailSender {
 	
 	private static String host;
 	private static String user;
-	private static char[] password;
+	private static String password;
 	private static String port;
 	private static String chooserLocation = ".";
 	
@@ -208,14 +208,13 @@ public class MailSender {
 
 			host = br.readLine().substring(7);
 			user = br.readLine().substring(7);
-			char[] buf = new char[256];
-			int read = br.read(buf);
-			if(buf.length <= 11 || read != buf.length) {
+			password = br.readLine();
+			if(password.length() <= 11) {
 				mainFrame.log("Password is not set in config.txt or too long!");
-				password = SwingDialogs.inputPassword("Password", "Enter password : ");
+				password = String.valueOf(SwingDialogs.inputPassword("Password", "Enter password : "));
 				if(password == null) SwingDialogs.error("Error", "You didin't type password!", null, true);
 			} else {
-				password = Arrays.copyOfRange(buf, 11, buf.length);
+				password = password.substring(11);
 			}
 			port = br.readLine().substring(7);
 			chooserLocation = br.readLine().substring(18);
