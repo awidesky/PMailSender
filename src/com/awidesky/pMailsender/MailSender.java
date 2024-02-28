@@ -102,7 +102,7 @@ public class MailSender {
 		
 			send(title, content, files);
 		} catch (Exception e) {
-			mainFrame.errorWait("Error!", e.getMessage());
+			mainFrame.errorWait("Error!", e.toString());
 			saveMail(title, content, files);
 			mainFrame.log(e);
 			System.exit(1);
@@ -173,11 +173,11 @@ public class MailSender {
 			port = br.readLine().substring(7);
 			chooserLocation = br.readLine().substring(18);
 
-		} catch (FileNotFoundException nf) {
-			mainFrame.errorWait(nf.getMessage(), "Please write smtp configuration(password is optional) and restart the application!");
+		} catch (FileNotFoundException | StringIndexOutOfBoundsException nf) {
+			mainFrame.errorWait(nf.toString(), "Please write smtp configuration(password is optional) and restart the application!");
 			try {
 				File f = new File(ConfigFilePathGetter.getProjectPath() + "config.txt");
-				f.createNewFile();
+				if(!f.exists()) f.createNewFile();
 				try(FileWriter fw = new FileWriter(f)) {
 				fw.write("""
 						host = 
@@ -226,7 +226,7 @@ public class MailSender {
 		
 	}
 		
-	private static void sendSavedMail() throws Exception { //TODO : set exception handling
+	private static void sendSavedMail() throws Exception {
 		
 		BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailContent.txt")));
 		String line = null, title;
