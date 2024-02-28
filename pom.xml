@@ -75,7 +75,7 @@
 					<addModules>java.base,java.desktop</addModules>
 					<mainJar>PMailSender.jar</mainJar>
 					<mainClass>com.awidesky.pMailsender.MailSender</mainClass>
-					<name>PMailSender_setup</name>
+					<name>PMailSender</name>
 					<vendor>Eugene Hong</vendor>
 					<appVersion>${project.version}</appVersion>
 					<licenseFile>${basedir}/LICENSE</licenseFile>
