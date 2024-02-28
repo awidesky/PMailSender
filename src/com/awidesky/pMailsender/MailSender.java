@@ -4,10 +4,13 @@ import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -28,9 +31,15 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import javax.swing.SwingUtilities;
 
+import io.github.awidesky.guiUtil.Logger;
+import io.github.awidesky.guiUtil.LoggerThread;
+import io.github.awidesky.guiUtil.SwingDialogs;
+
 
 public class MailSender {
 
+	private static LoggerThread loggerThread = new LoggerThread();
+	
 	private static String host;
 	private static String user;
 	private static char[] password;
@@ -45,11 +54,13 @@ public class MailSender {
 	private static final Properties props = new Properties();
 	private static Session session;
 	
-	private static MainFrame mainFrame = new MainFrame(title, content);
+	private static MainFrame mainFrame = new MainFrame(loggerThread.getLogger(), title, content);
 	private static List<File> files = new LinkedList<>();
 	
 	public static void main(String[] args) {
-
+		
+		setupLogging();
+		
 		try {
 
 			SwingUtilities.invokeLater(mainFrame::setUp);;
@@ -101,13 +112,49 @@ public class MailSender {
 		
 			send(title, content, files);
 		} catch (Exception e) {
-			mainFrame.errorWait("Error!", e.toString());
+			SwingDialogs.error("Error!", "%e%", e, true);
 			saveMail(title, content, files);
 			mainFrame.log(e);
 			System.exit(1);
 		}
-			
+		loggerThread.shutdown(1000);
 	
+	}
+	private static void setupLogging() {
+		/** Set Default Uncaught Exception Handlers */
+		Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+			try {
+				SwingDialogs.error("Unhandled exception in thread " + t.getName() + " : " + ((Exception)e).getClass().getName(), "%e%", (Exception)e , true);
+				loggerThread.shutdown(1000);
+				System.exit(2);
+			} catch(Exception err) {
+				err.printStackTrace();
+			}
+		});
+		SwingUtilities.invokeLater(() -> {
+			Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
+				try {
+					SwingDialogs.error("Unhandled exception in EDT : " + ((Exception) e).getClass().getName(), "%e%", (Exception) e, true);
+					loggerThread.shutdown(1000);
+					System.exit(2);
+				} catch (Exception err) {
+					err.printStackTrace();
+				}
+			});
+		});
+		loggerThread.setDatePrefix(new SimpleDateFormat("[kk:mm:ss.SSS]"));
+		File logFolder = new File(ConfigFilePathGetter.getProjectPath() + File.separator + "logs");
+		File logFile = new File(logFolder.getAbsolutePath() + File.separator + "log-" + new SimpleDateFormat("yyyy-MM-dd-kk-mm-ss").format(new Date()) + ".txt");
+		logFolder.mkdirs();
+		try {
+			logFile.createNewFile();
+			loggerThread.setLogDestination(new FileOutputStream(logFile), true);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			loggerThread.setLogDestination(System.out);
+		}
+		loggerThread.start();
+		SwingDialogs.setLogger(loggerThread.getLogger());
 	}
 	/**
 	 * 
@@ -118,7 +165,7 @@ public class MailSender {
 		
 		if (new File("lastTriedMailContent.txt").exists()) {
 			
-			if (mainFrame.confirm("Retry sending last saved mail?", "Last attempt wasn't successful!")) {
+			if (SwingDialogs.confirm("Retry sending last saved mail?", "Last attempt wasn't successful!")) {
 				sendSavedMail();
 				return true;
 			} else {
@@ -165,7 +212,8 @@ public class MailSender {
 			int read = br.read(buf);
 			if(buf.length <= 11 || read != buf.length) {
 				mainFrame.log("Password is not set in config.txt or too long!");
-				password = mainFrame.inputPassword("Enter password : ");
+				password = SwingDialogs.inputPassword("Password", "Enter password : ");
+				if(password == null) SwingDialogs.error("Error", "You didin't type password!", null, true);
 			} else {
 				password = Arrays.copyOfRange(buf, 11, buf.length);
 			}
@@ -173,7 +221,7 @@ public class MailSender {
 			chooserLocation = br.readLine().substring(18);
 
 		} catch (FileNotFoundException | StringIndexOutOfBoundsException nf) {
-			mainFrame.errorWait(nf.toString(), "Please write smtp configuration(password is optional) and restart the application!");
+			SwingDialogs.error(nf.toString(), "Please write smtp configuration(password is optional) and restart the application!\n%e%", nf, true);
 			try {
 				File f = new File(ConfigFilePathGetter.getProjectPath() + "config.txt");
 				if(!f.exists()) f.createNewFile();
@@ -317,7 +365,7 @@ public class MailSender {
 		mainFrame.log("\tSending Message...");
 		Transport.send(message);
 		mainFrame.log("\nMessage Sent Successfully!");
-		mainFrame.inform("Message Sent Successfully!", "Done!");
+		SwingDialogs.information("Message Sent Successfully!", "Done!", true);
 	}
 	
 

@@ -3,20 +3,18 @@ package com.awidesky.pMailsender;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
-import java.awt.Dialog.ModalityType;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.swing.Box;
@@ -25,9 +23,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -35,6 +31,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
+
+import io.github.awidesky.guiUtil.TaskLogger;
 
 public class MainFrame extends JFrame {
 
@@ -49,8 +47,11 @@ public class MainFrame extends JFrame {
 	private JTextArea files = new JTextArea(10, 50);
 	private JTextArea console = new JTextArea(20, 50);
 	
-	public MainFrame(String t, String c) {
-		super("PMailSender");
+	private TaskLogger logger;
+	
+	public MainFrame(TaskLogger taskLogger, String t, String c) {
+		super();
+		this.logger = taskLogger;
 		tf_title = new JTextField(t, 10);
 		tf_content = new JTextField(c, 20);
 	}
@@ -86,6 +87,7 @@ public class MainFrame extends JFrame {
 		pack();
 		setLocation(dim.width / 2 - getSize().width / 2, dim.height / 2 - getSize().height / 2);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setTitle("PMailSender");
         setVisible(true);  
 	}
 	
@@ -171,19 +173,17 @@ public class MainFrame extends JFrame {
 	public String getContent() { return tf_content.getText(); }
 	
 	public void log() {
-		SwingUtilities.invokeLater(() -> {
-			console.append("\n");
-		});
-		System.out.println();
+		log("\n");
 	}
 	public void log(String str) {
 		SwingUtilities.invokeLater(() -> {
 			console.append(str);
 			console.append("\n");
 		});
-		System.out.println(str);
+		logger.log(str);
 	}
 	public void log(Exception e) {
+		logger.log(e);
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		e.printStackTrace(pw);
@@ -217,49 +217,6 @@ public class MainFrame extends JFrame {
 		return list;
 	}
 
-	public char[] inputPassword(String t) {
-		char[] password = new char[] {'\0'};
-		final JPasswordField pf = new JPasswordField();
-		if (JOptionPane.showConfirmDialog(dialog, pf, t, JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
-			password = pf.getPassword();
-		} else { error("Error", "You didin't type password!"); System.exit(1); }
-		
-		return password;
-	}
-	
-	public void inform(String title, String content) {
-		SwingUtilities.invokeLater(() -> {
-			JOptionPane.showMessageDialog(dialog, title, content, JOptionPane.INFORMATION_MESSAGE);
-		});
-	}
-	public void errorWait(String title, String content) {
-		try {
-			SwingUtilities.invokeAndWait(() -> {
-				JOptionPane.showMessageDialog(dialog, content, title, JOptionPane.ERROR_MESSAGE);
-			});
-		} catch (InvocationTargetException | InterruptedException e) {
-			log(e);
-		}
-	}
-	public void error(String title, String content) {
-		SwingUtilities.invokeLater(() -> {
-			errorWait(title, content);
-		});
-	}
-
-	public boolean confirm(String title, String content) {
-		final AtomicReference<Boolean> result = new AtomicReference<>();
-		try {
-			SwingUtilities.invokeAndWait(() -> {
-				result.set(JOptionPane.showConfirmDialog(dialog, title, content, JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION);
-			});
-		} catch (InvocationTargetException | InterruptedException e) {
-			log(e);
-			return false;
-		}
-		return result.get();
-
-	}
 
 	@Override
 	public void dispose() {

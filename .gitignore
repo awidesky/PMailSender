@@ -2,6 +2,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,eclipse,windows,macos,maven
 
 /build/
+/logs/
 
 ### Eclipse ###
 .metadata

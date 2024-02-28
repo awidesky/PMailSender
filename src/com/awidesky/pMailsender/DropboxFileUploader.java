@@ -32,6 +32,8 @@ import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.WriteMode;
 import com.dropbox.core.v2.users.FullAccount;
 
+import io.github.awidesky.guiUtil.SwingDialogs;
+
 public class DropboxFileUploader {
 	
 	/** for logging & error dialog */
@@ -94,7 +96,7 @@ public class DropboxFileUploader {
 		mainFrame.log("3. Copy the authorization code.");
 		mainFrame.log("(copy it to dropboxAuth.txt too when you don't want to do this twice)");
 
-		DbxAuthFinish authFinish = webAuth.finishFromCode(String.valueOf(mainFrame.inputPassword("Enter the authorization code here: ")));
+		DbxAuthFinish authFinish = webAuth.finishFromCode(String.valueOf(SwingDialogs.inputPassword("Dropbox auth info", "Enter the authorization code here: ")));
 		mainFrame.log("Authorization complete.");
 		mainFrame.log("- User ID: " + authFinish.getUserId());
 
@@ -113,7 +115,7 @@ public class DropboxFileUploader {
 			accessToken = (arr.length == 2 && !arr[1].trim().equals("")) ? arr[1].trim() : null;
 
 		} catch (FileNotFoundException nf) {
-			mainFrame.errorWait(nf.getMessage(), "Please write dropbox auth information and restart the application!");
+			SwingDialogs.error(nf.toString(), "Please write dropbox auth information and restart the application!\n%e%", nf, true);
 			try {
 				File f = new File(ConfigFilePathGetter.getProjectPath() + "dropboxAuth.txt");
 				f.createNewFile();
