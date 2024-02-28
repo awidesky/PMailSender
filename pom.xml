@@ -123,6 +123,7 @@
 						<artifactId>jpackage-maven-plugin</artifactId>
 						<version>1.4.0</version>
 						<configuration>
+							<winPerUserInstall>true</winPerUserInstall>
 							<winMenu>true</winMenu>
 							<winShortcut>true</winShortcut>
 						</configuration>
