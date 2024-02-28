@@ -10,8 +10,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -117,21 +117,19 @@ public class DropboxFileUploader {
 			try {
 				File f = new File(ConfigFilePathGetter.getProjectPath() + "dropboxAuth.txt");
 				f.createNewFile();
-				try(FileWriter fw = new FileWriter(f)) {
-					fw.write("""
-							App Identifier =
-							App key =
-							App Secret =
-							Access Token (optional) =
-
-
-							#if you have dropbox app, you can use it to upload files and send links when attached files are bigger than limit.
-							#for example :
-							App Identifier = PMailSender/1.0
-							App key = abcdefg12345678
-							App Secret = abcdefg12345678
-							Access Token (optional) = fasdijiojefinaihweaio3hr30493=eawjfpefa
-							 """);
+				try(PrintWriter pw = new PrintWriter(f)) {
+					pw.println("App Identifier = ");
+					pw.println("App key = ");
+					pw.println("App Secret = ");
+					pw.println("Access Token (optional) = ");
+					pw.println();
+					pw.println();
+					pw.println("#if you have dropbox app, you can use it to upload files and send links when attached files are bigger than limit.");
+					pw.println("#for example :");
+					pw.println("App Identifier = PMailSender/1.0");
+					pw.println("App key = abcdefg12345678");
+					pw.println("App Secret = abcdefg12345678");
+					pw.println("Access Token (optional) = fasdijiojefinaihweaio3hr30493=eawjfpefa");
 				}
 				Desktop.getDesktop().open(f);
 			} catch (IOException e) {

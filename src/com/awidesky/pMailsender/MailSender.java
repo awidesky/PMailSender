@@ -5,7 +5,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -178,22 +177,20 @@ public class MailSender {
 			try {
 				File f = new File(ConfigFilePathGetter.getProjectPath() + "config.txt");
 				if(!f.exists()) f.createNewFile();
-				try(FileWriter fw = new FileWriter(f)) {
-				fw.write("""
-						host = 
-						user = 
-						password = 
-						port = 
-						chooserLocation = 
-						
-						
-						#for example :
-						host = smtp.gmail.com
-						user = JohnDoe@gmail.com
-						password = doeAdearFema1eDeer1234
-						port = 465
-						chooserLocation = C:\\Users\\John Doe\\Downloads
-						 """);
+				try(PrintWriter pw = new PrintWriter(f)) {
+					pw.println("host = ");
+					pw.println("user = ");
+					pw.println("password = ");
+					pw.println("port = ");
+					pw.println("chooserLocation = ");
+					pw.println();
+					pw.println();
+					pw.println("#for example :");
+					pw.println("host = smtp.gmail.com");
+					pw.println("user = JohnDoe@gmail.com");
+					pw.println("password = doeAdearFema1eDeer1234");
+					pw.println("port = 465");
+					pw.println("chooserLocation = C:\\Users\\John Doe\\Downloads");
 				}
 				Desktop.getDesktop().open(f);
 				mainFrame.log(nf);
