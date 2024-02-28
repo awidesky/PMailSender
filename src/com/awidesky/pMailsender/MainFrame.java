@@ -174,12 +174,14 @@ public class MainFrame extends JFrame {
 		SwingUtilities.invokeLater(() -> {
 			console.append("\n");
 		});
+		System.out.println();
 	}
 	public void log(String str) {
 		SwingUtilities.invokeLater(() -> {
 			console.append(str);
 			console.append("\n");
 		});
+		System.out.println(str);
 	}
 	public void log(Exception e) {
 		StringWriter sw = new StringWriter();
