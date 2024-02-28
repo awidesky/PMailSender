@@ -217,10 +217,10 @@ public class MainFrame extends JFrame {
 		return list;
 	}
 
-	public char[] inputPassword() {
+	public char[] inputPassword(String t) {
 		char[] password = new char[] {'\0'};
 		final JPasswordField pf = new JPasswordField();
-		if (JOptionPane.showConfirmDialog(dialog, pf, "Enter password : ", JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+		if (JOptionPane.showConfirmDialog(dialog, pf, t, JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
 			password = pf.getPassword();
 		} else { error("Error", "You didin't type password!"); System.exit(1); }
 		
@@ -232,9 +232,18 @@ public class MainFrame extends JFrame {
 			JOptionPane.showMessageDialog(dialog, title, content, JOptionPane.INFORMATION_MESSAGE);
 		});
 	}
+	public void errorWait(String title, String content) {
+		try {
+			SwingUtilities.invokeAndWait(() -> {
+				JOptionPane.showMessageDialog(dialog, content, title, JOptionPane.ERROR_MESSAGE);
+			});
+		} catch (InvocationTargetException | InterruptedException e) {
+			log(e);
+		}
+	}
 	public void error(String title, String content) {
 		SwingUtilities.invokeLater(() -> {
-			JOptionPane.showMessageDialog(dialog, content, title, JOptionPane.ERROR_MESSAGE);
+			errorWait(title, content);
 		});
 	}
 

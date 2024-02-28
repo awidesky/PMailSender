@@ -1,8 +1,11 @@
 package com.awidesky.pMailsender;
 
+import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -46,61 +49,63 @@ public class MailSender {
 	private static MainFrame mainFrame = new MainFrame(title, content);
 	private static List<File> files = new LinkedList<>();
 	
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 
-		SwingUtilities.invokeLater(mainFrame::setUp);;
-		config(args);
-		setSession();
-		if(checkLastAttempt()) return;
-		
-		mainFrame.log("Running...");
-		
-		File startPath = new File(chooserLocation);
-		files = mainFrame.chooseLoop(startPath);
-		
-		title = mainFrame.getTitle();
-		content = mainFrame.getContent();
-		
-		files = files.stream().distinct().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(LinkedList::new));
-		
-		if (files.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limit)
-			
-			title += " + 링크(들)도 클릭";
-			List<File> dropboxed;
-			mainFrame.log("Mail attachment too big! (>10MB)");
-			mainFrame.log("Trying dropbox link instead..");
-			
-			dropboxed = files.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
-			if(dropboxed.size() != 0) {
-				files.removeAll(dropboxed);
-			}
-			
-			long totalSize = 0L;
-			for(int i = 0; i < files.size(); i++) {
-				
-				totalSize += files.get(i).length();
-				
-				if(totalSize >= attatchLimit) {
-					//No super big file(s), but still exceed limit.
-					
-					List<File> temp = files.subList(i, files.size());
-					dropboxed.addAll(temp);
-					temp.clear();
-					
-				}
-				
-			}
-			
-			content += System.lineSeparator() + new DropboxFileUploader().uploadFileAndGetLink(dropboxed, "/document/");
-			
-		}
-		
 		try {
+
+			SwingUtilities.invokeLater(mainFrame::setUp);;
+			config(args);
+			setSession();
+			if(checkLastAttempt()) return;
+
+			mainFrame.log("Running...");
+
+			File startPath = new File(chooserLocation);
+			files = mainFrame.chooseLoop(startPath);
+
+			title = mainFrame.getTitle();
+			content = mainFrame.getContent();
+
+			files = files.stream().distinct().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(LinkedList::new));
+
+			if (files.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limit)
+
+				title += " + 링크(들)도 클릭";
+				List<File> dropboxed;
+				mainFrame.log("Mail attachment too big! (>10MB)");
+				mainFrame.log("Trying dropbox link instead..");
+
+				dropboxed = files.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
+				if(dropboxed.size() != 0) {
+					files.removeAll(dropboxed);
+				}
+
+				long totalSize = 0L;
+				for(int i = 0; i < files.size(); i++) {
+
+					totalSize += files.get(i).length();
+
+					if(totalSize >= attatchLimit) {
+						//No super big file(s), but still exceed limit.
+
+						List<File> temp = files.subList(i, files.size());
+						dropboxed.addAll(temp);
+						temp.clear();
+
+					}
+
+				}
+
+				content += System.lineSeparator() + new DropboxFileUploader(mainFrame).uploadFileAndGetLink(dropboxed, "/document/");
+
+			}
+		
 			send(title, content, files);
 		} catch (Exception e) {
-			mainFrame.error("Error!", e.getMessage());
+			mainFrame.errorWait("Error!", e.getMessage());
 			saveMail(title, content, files);
-			throw e;
+			mainFrame.log(e);
+			System.exit(1);
 		}
 			
 	
@@ -161,13 +166,42 @@ public class MailSender {
 			int read = br.read(buf);
 			if(buf.length <= 11 || read != buf.length) {
 				mainFrame.log("Password is not set in config.txt or too long!");
-				password = mainFrame.inputPassword();
+				password = mainFrame.inputPassword("Enter password : ");
 			} else {
 				password = Arrays.copyOfRange(buf, 11, buf.length);
 			}
 			port = br.readLine().substring(7);
 			chooserLocation = br.readLine().substring(18);
 
+		} catch (FileNotFoundException nf) {
+			mainFrame.errorWait(nf.getMessage(), "Please write smtp configuration(password is optional) and restart the application!");
+			try {
+				File f = new File(ConfigFilePathGetter.getProjectPath() + "config.txt");
+				f.createNewFile();
+				try(FileWriter fw = new FileWriter(f)) {
+				fw.write("""
+						host = 
+						user = 
+						password = 
+						port = 
+						chooserLocation = 
+						
+						
+						#for example :
+						host = smtp.gmail.com
+						user = JohnDoe@gmail.com
+						password = doeAdearFema1eDeer1234
+						port = 465
+						chooserLocation = C:\\Users\\John Doe\\Downloads
+						 """);
+				}
+				Desktop.getDesktop().open(f);
+				mainFrame.log(nf);
+				System.exit(1);
+			} catch (IOException e) {
+				mainFrame.log(e);
+				System.exit(1);
+			}
 		} catch (Exception e1) {
 			mainFrame.log(e1);
 			System.exit(1);
@@ -192,7 +226,7 @@ public class MailSender {
 		
 	}
 		
-	private static void sendSavedMail() throws Exception {
+	private static void sendSavedMail() throws Exception { //TODO : set exception handling
 		
 		BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailContent.txt")));
 		String line = null, title;

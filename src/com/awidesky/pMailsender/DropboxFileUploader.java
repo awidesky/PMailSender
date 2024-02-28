@@ -1,5 +1,6 @@
 package com.awidesky.pMailsender;
 
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
@@ -7,11 +8,13 @@ import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Scanner;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -30,6 +33,9 @@ import com.dropbox.core.v2.files.WriteMode;
 import com.dropbox.core.v2.users.FullAccount;
 
 public class DropboxFileUploader {
+	
+	/** for logging & error dialog */
+	private MainFrame mainFrame; 
 
 	private String clientIdentifier;
 	private String appKey;
@@ -47,9 +53,10 @@ public class DropboxFileUploader {
 	 * 
 	 * @throws Exception
 	 */
-	public DropboxFileUploader() throws Exception {
-
-		System.out.println("Authorizing Dropbox account..");
+	public DropboxFileUploader(MainFrame mainFrame) throws Exception {
+		
+		this.mainFrame = mainFrame;
+		mainFrame.log("Authorizing Dropbox account..");
 		readConfig();
 
 		config = DbxRequestConfig.newBuilder(clientIdentifier).withAutoRetryEnabled()
@@ -67,12 +74,12 @@ public class DropboxFileUploader {
 			// Get current account info
 			account = client.users().getCurrentAccount();
 		} catch (InvalidAccessTokenException e) {
-			System.out.println("Invalide access token! : " + accessToken);
+			mainFrame.log("Invalide access token! : " + accessToken);
 			webAuth();
 			account = client.users().getCurrentAccount();
 		}
 		
-		System.out.println("Account name : " + account.getName().getDisplayName());
+		mainFrame.log("Account name : " + account.getName().getDisplayName());
 
 	}
 
@@ -81,24 +88,15 @@ public class DropboxFileUploader {
 		DbxWebAuth webAuth = new DbxWebAuth(config, appInfo);
 		DbxWebAuth.Request webAuthRequest = DbxWebAuth.newRequestBuilder().withNoRedirect().build();
 		String authorizeUrl = webAuth.authorize(webAuthRequest);
-		System.out.println();
-		System.out.println("1. Go to " + authorizeUrl);
-		System.out.println("2. Click \"Allow\" (you might have to log in first).");
-		System.out.println("3. Copy the authorization code.");
-		System.out.println("(copy it to dropboxAuth.txt too when you don't want to do this twice)");
-		System.out.print("Enter the authorization code here: ");
-		Scanner sc = new Scanner(System.in);
-		String code = "";
+		mainFrame.log();
+		mainFrame.log("1. Go to " + authorizeUrl);
+		mainFrame.log("2. Click \"Allow\" (you might have to log in first).");
+		mainFrame.log("3. Copy the authorization code.");
+		mainFrame.log("(copy it to dropboxAuth.txt too when you don't want to do this twice)");
 
-		while ((code = sc.nextLine()) == null) {
-		} // ATTENTION! ONE-LINE LOOP!
-
-		sc.close();
-
-		code = code.trim();
-		DbxAuthFinish authFinish = webAuth.finishFromCode(code);
-		System.out.println("Authorization complete.");
-		System.out.println("- User ID: " + authFinish.getUserId());
+		DbxAuthFinish authFinish = webAuth.finishFromCode(String.valueOf(mainFrame.inputPassword("Enter the authorization code here: ")));
+		mainFrame.log("Authorization complete.");
+		mainFrame.log("- User ID: " + authFinish.getUserId());
 
 		accessToken = authFinish.getAccessToken();
 
@@ -106,7 +104,7 @@ public class DropboxFileUploader {
 	
 	private void readConfig() throws Exception {
 
-		try (BufferedReader br = new BufferedReader(new FileReader(new File("dropboxAuth.txt")))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getProjectPath() + "dropboxAuth.txt")))) {
 
 			clientIdentifier = br.readLine().split("=")[1].trim();
 			appKey = br.readLine().split("=")[1].trim();
@@ -114,8 +112,35 @@ public class DropboxFileUploader {
 			String[] arr = br.readLine().split("=");
 			accessToken = (arr.length == 2 && !arr[1].trim().equals("")) ? arr[1].trim() : null;
 
+		} catch (FileNotFoundException nf) {
+			mainFrame.errorWait(nf.getMessage(), "Please write dropbox auth information and restart the application!");
+			try {
+				File f = new File(ConfigFilePathGetter.getProjectPath() + "dropboxAuth.txt");
+				f.createNewFile();
+				try(FileWriter fw = new FileWriter(f)) {
+					fw.write("""
+							App Identifier =
+							App key =
+							App Secret =
+							Access Token (optional) =
+
+
+							#if you have dropbox app, you can use it to upload files and send links when attached files are bigger than limit.
+							#for example :
+							App Identifier = PMailSender/1.0
+							App key = abcdefg12345678
+							App Secret = abcdefg12345678
+							Access Token (optional) = fasdijiojefinaihweaio3hr30493=eawjfpefa
+							 """);
+				}
+				Desktop.getDesktop().open(f);
+			} catch (IOException e) {
+				mainFrame.log(e);
+				throw e;
+			}
+			throw nf;
 		} catch (Exception e1) {
-			System.err.println("Check if dropboxAuth.txt is well-written!");
+			mainFrame.log("Check if dropboxAuth.txt is well-written!");
 			throw e1;
 		}
 
@@ -123,8 +148,8 @@ public class DropboxFileUploader {
 
 	public String uploadFileAndGetLink(List<File> list, String dropboxPath) throws Exception {
 		
-		System.out.println();
-		System.out.println("Getting download links...");
+		mainFrame.log();
+		mainFrame.log("Getting download links...");
 		StringBuilder sb = new StringBuilder("");
 		
 		for (File f : list) {
@@ -133,11 +158,11 @@ public class DropboxFileUploader {
 			try {
 				
 				if(!isLinkExists(dropboxPath + f.getName())) {
-					System.out.println("Uploading \"" + f.getName() + "\"...");
+					mainFrame.log("Uploading \"" + f.getName() + "\"...");
 					uploadFile(f, dropboxPath);
 					link = client.sharing().createSharedLinkWithSettings(dropboxPath + f.getName()).getUrl();
 				} else {
-					System.out.println("\"" + f.getName() + "\"S is already uploaded, retrieving link...");
+					mainFrame.log("\"" + f.getName() + "\"S is already uploaded, retrieving link...");
 					link = client.sharing().listSharedLinksBuilder().withPath(dropboxPath + f.getName()).start().getLinks().get(0).getUrl();
 				}
 				
@@ -147,10 +172,10 @@ public class DropboxFileUploader {
 			
 			} catch (Exception ex) {
 				
-				System.out.println();
-				System.out.println("Failed to upload file \"" + f.getName() + "\": " + ex.getMessage());
-				System.out.println("Try deleting uploaded files...");
-				System.out.println();
+				mainFrame.log();
+				mainFrame.log("Failed to upload file \"" + f.getName() + "\": " + ex.getMessage());
+				mainFrame.log("Try deleting uploaded files...");
+				mainFrame.log();
 				
 				for (int i = 0; i < list.indexOf(f); i++) {
 					
@@ -163,7 +188,7 @@ public class DropboxFileUploader {
 			}
 		}
 		
-		System.out.println();
+		mainFrame.log();
 		return sb.toString();
 	}
 	
@@ -174,8 +199,8 @@ public class DropboxFileUploader {
 		UploadProgress prog = new UploadProgress(f);
 		FileMetadata metadata = client.files().uploadBuilder(path + f.getName()).withMode(WriteMode.ADD)
 				.withClientModified(new Date(f.lastModified())).uploadAndFinish(in, prog);
-		System.out.println();
-		System.out.println(f.getName() + "matadata : " + metadata.toStringMultiline());
+		mainFrame.log();
+		mainFrame.log(f.getName() + "matadata : " + metadata.toStringMultiline());
 		prog.done();
 
 		in.close();
@@ -203,10 +228,10 @@ public class DropboxFileUploader {
 			if(isLinkExists(path)) client.files().deleteV2(path);
 			
 		} catch (Exception e) {
-			System.out.println();
-			System.out.println("Failed to delete uploaded file \"" + path + "\"");
-			e.printStackTrace();
-			System.out.println();
+			mainFrame.log();
+			mainFrame.log("Failed to delete uploaded file \"" + path + "\"");
+			mainFrame.log(e);
+			mainFrame.log();
 		}
 		
 	}
