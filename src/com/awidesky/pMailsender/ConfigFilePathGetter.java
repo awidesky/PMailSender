@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 public class ConfigFilePathGetter {
 
 	public static String getProjectPath() {
-		
+		System.out.println(". : "+ new File(".").getAbsolutePath());//TODO
 		return Stream.of(
 					classLocationBased(), 
 					propertyBased(),
@@ -26,13 +26,14 @@ public class ConfigFilePathGetter {
 					if (System.getProperty("jpackage.app-path") != null) {
 						ret += File.separator + "app";
 					}
+					System.out.println("[] " + ret);
 					return ret;
-				}).map(s -> new File(s + File.separator + "config.txt"))
+				})
+				.map(File::new)
 				.filter(File::exists)
-				.map(File::getParentFile)
 				.map(File::getAbsolutePath)
 				.findFirst()
-				.orElse(".")
+				.orElse(new File(".").getAbsolutePath())
 				+ File.separator;
 	}
 	

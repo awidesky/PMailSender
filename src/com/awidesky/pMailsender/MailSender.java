@@ -31,7 +31,6 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import javax.swing.SwingUtilities;
 
-import io.github.awidesky.guiUtil.Logger;
 import io.github.awidesky.guiUtil.LoggerThread;
 import io.github.awidesky.guiUtil.SwingDialogs;
 
@@ -223,6 +222,7 @@ public class MailSender {
 			SwingDialogs.error(nf.toString(), "Please write smtp configuration(password is optional) and restart the application!\n%e%", nf, true);
 			try {
 				File f = new File(ConfigFilePathGetter.getProjectPath() + "config.txt");
+				System.out.println(f.toString()); //TODO
 				if(!f.exists()) f.createNewFile();
 				try(PrintWriter pw = new PrintWriter(f)) {
 					pw.println("host = ");

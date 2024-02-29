@@ -136,5 +136,27 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>platform-macOS</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.panteleyev</groupId>
+						<artifactId>jpackage-maven-plugin</artifactId>
+						<version>1.4.0</version>
+						<configuration>
+							<type>PKG</type>
+							<macPackageIdentifier>PMailSender-${project.version}</macPackageIdentifier>
+							<macPackageName>PMailSender</macPackageName>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 </project>
