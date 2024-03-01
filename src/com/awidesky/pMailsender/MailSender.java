@@ -149,7 +149,7 @@ public class MailSender {
 			logFile.createNewFile();
 			loggerThread.setLogDestination(new FileOutputStream(logFile), true);
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			SwingDialogs.error("Unable to create log file!", "Loging to console instead...\n%e%", e1, true);
 			loggerThread.setLogDestination(System.out);
 		}
 		loggerThread.start();
@@ -222,7 +222,6 @@ public class MailSender {
 			SwingDialogs.error(nf.toString(), "Please write smtp configuration(password is optional) and restart the application!\n%e%", nf, true);
 			try {
 				File f = new File(ConfigFilePathGetter.getProjectPath() + "config.txt");
-				System.out.println(f.toString()); //TODO
 				if(!f.exists()) f.createNewFile();
 				try(PrintWriter pw = new PrintWriter(f)) {
 					pw.println("host = ");
