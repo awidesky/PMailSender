@@ -150,7 +150,7 @@
 						<artifactId>jpackage-maven-plugin</artifactId>
 						<version>1.4.0</version>
 						<configuration>
-							<type>PKG</type>
+							<type>DMG</type>
 							<macPackageIdentifier>PMailSender-${project.version}</macPackageIdentifier>
 							<macPackageName>PMailSender</macPackageName>
 						</configuration>
