@@ -34,7 +34,7 @@ public class ConfigFilePathGetter {
 				.filter(File::exists)
 				.map(File::getAbsolutePath)
 				.findFirst()
-				+ File.separator;
+				.orElse(".") + File.separator;
 	}
 	
 	

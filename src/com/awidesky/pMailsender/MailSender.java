@@ -142,7 +142,7 @@ public class MailSender {
 			});
 		});
 		loggerThread.setDatePrefix(new SimpleDateFormat("[kk:mm:ss.SSS]"));
-		File logFolder = new File(ConfigFilePathGetter.getProjectPath() + File.separator + "logs");
+		File logFolder = new File(ConfigFilePathGetter.getProjectPath() + "logs");
 		File logFile = new File(logFolder.getAbsolutePath() + File.separator + "log-" + new SimpleDateFormat("yyyy-MM-dd-kk-mm-ss").format(new Date()) + ".txt");
 		logFolder.mkdirs();
 		try {
