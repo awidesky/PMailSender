@@ -33,12 +33,29 @@ import javax.swing.SwingUtilities;
 
 import io.github.awidesky.guiUtil.LoggerThread;
 import io.github.awidesky.guiUtil.SwingDialogs;
-import net.harawata.appdirs.AppDirsFactory;
 
 
 public class MailSender {
 
-	public static final String projectPath = AppDirsFactory.getInstance().getUserDataDir("PMailSender", null, "awidesky") + File.separator;
+	public static String projectPath = "";//AppDirsFactory.getInstance().getUserDataDir("PMailSender", null, "awidesky") + File.separator;
+	static {
+		String home = System.getProperty("user.home");
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.startsWith("mac")) {
+			projectPath = home + "/Library/Application Support/awidesky/PMailSender";
+		} else if (os.startsWith("windows")) {
+			projectPath = System.getenv("LOCALAPPDATA") + "\\awidesky\\PMailSender";
+		} else {
+			// Assume linux.
+			projectPath = home + "/.local/share/awidesky/PMailSender";
+		}
+		try {
+			new File(projectPath).createNewFile();
+		} catch (IOException e) {
+			SwingDialogs.error("Cannot detect appdata directory!", projectPath + "\nis not a valid data directory!\n%e%", e, true);
+			System.exit(1);
+		}
+	}
 
 	private static LoggerThread loggerThread = new LoggerThread();
 	
