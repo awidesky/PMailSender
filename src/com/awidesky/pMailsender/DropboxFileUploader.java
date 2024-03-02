@@ -116,34 +116,33 @@ public class DropboxFileUploader {
 
 		} catch (FileNotFoundException nf) {
 			SwingDialogs.error(nf.toString(), "Please write dropbox auth information and restart the application!\n%e%", nf, true);
-			try {
-				File f = new File(MailSender.projectPath + "dropboxAuth.txt");
-				f.createNewFile();
-				try(PrintWriter pw = new PrintWriter(f)) {
-					pw.println("App Identifier = ");
-					pw.println("App key = ");
-					pw.println("App Secret = ");
-					pw.println("Access Token (optional) = ");
-					pw.println();
-					pw.println();
-					pw.println("#if you have dropbox app, you can use it to upload files and send links when attached files are bigger than limit.");
-					pw.println("#for example :");
-					pw.println("App Identifier = PMailSender/1.0");
-					pw.println("App key = abcdefg12345678");
-					pw.println("App Secret = abcdefg12345678");
-					pw.println("Access Token (optional) = fasdijiojefinaihweaio3hr30493=eawjfpefa");
-				}
-				Desktop.getDesktop().open(f);
-			} catch (IOException e) {
-				mainFrame.log(e);
-				throw e;
-			}
+			createDropboxAuth();
 			throw nf;
 		} catch (Exception e1) {
 			mainFrame.log("Check if dropboxAuth.txt is well-written!");
 			throw e1;
 		}
 
+	}
+
+	public static void createDropboxAuth() throws IOException {
+		File f = new File(MailSender.projectPath + "dropboxAuth.txt");
+		f.createNewFile();
+		try(PrintWriter pw = new PrintWriter(f)) {
+			pw.println("App Identifier = ");
+			pw.println("App key = ");
+			pw.println("App Secret = ");
+			pw.println("Access Token (optional) = ");
+			pw.println();
+			pw.println();
+			pw.println("#if you have dropbox app, you can use it to upload files and send links when attached files are bigger than limit.");
+			pw.println("#for example :");
+			pw.println("App Identifier = PMailSender/1.0");
+			pw.println("App key = abcdefg12345678");
+			pw.println("App Secret = abcdefg12345678");
+			pw.println("Access Token (optional) = fasdijiojefinaihweaio3hr30493=eawjfpefa");
+		}
+		Desktop.getDesktop().open(f);
 	}
 
 	public String uploadFileAndGetLink(List<File> list, String dropboxPath) throws Exception {

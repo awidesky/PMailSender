@@ -3,6 +3,7 @@ package com.awidesky.pMailsender;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
@@ -10,6 +11,7 @@ import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -32,6 +35,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 
+import io.github.awidesky.guiUtil.SwingDialogs;
 import io.github.awidesky.guiUtil.TaskLogger;
 
 public class MainFrame extends JFrame {
@@ -46,6 +50,8 @@ public class MainFrame extends JFrame {
 	private JTextField tf_content;
 	private JTextArea files = new JTextArea(10, 50);
 	private JTextArea console = new JTextArea(20, 50);
+	private JButton openConfig = new JButton("config.txt");
+	private JButton openDropbox = new JButton("dropboxAuth.txt");
 	
 	private TaskLogger logger;
 	
@@ -58,9 +64,11 @@ public class MainFrame extends JFrame {
 	
 	public void setUp() {
 		setDialog();
-		setLayout(new BorderLayout(10, 10));
+		setLayout(new BorderLayout(5, 5));
 		setSize(200, 300);
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		
+		
 		JPanel texts = new JPanel();
 		texts.add(title);
 		texts.add(tf_title);
@@ -83,6 +91,27 @@ public class MainFrame extends JFrame {
 		consoles.add(Box.createVerticalStrut(5));
 		consoles.add(jsc_console);
 		add(consoles, BorderLayout.CENTER);
+		
+		JPanel buttons = new JPanel();
+		openConfig.addActionListener(i -> {
+			try {
+				Desktop.getDesktop().open(new File(MailSender.projectPath + "config.txt"));
+			} catch (IOException e) {
+				SwingDialogs.error("Cannot open config file!", "%e%", e, false);
+			}
+		});
+		openDropbox.addActionListener(i -> {
+			try {
+				File f = new File(MailSender.projectPath + "dropboxAuth.txt");
+				if(!f.exists()) DropboxFileUploader.createDropboxAuth();
+				Desktop.getDesktop().open(f);
+			} catch (IOException e) {
+				SwingDialogs.error("Cannot open dropboxAuth file!", "%e%", e, false);
+			}
+		});
+		buttons.add(openConfig);
+		buttons.add(openDropbox);
+		add(buttons, BorderLayout.SOUTH);
 		
 		pack();
 		setLocation(dim.width / 2 - getSize().width / 2, dim.height / 2 - getSize().height / 2);
