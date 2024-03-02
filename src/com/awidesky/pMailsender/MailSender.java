@@ -55,6 +55,7 @@ public class MailSender {
 			SwingDialogs.error("Cannot detect appdata directory!", projectPath + "\nis not a valid data directory!", null, true);
 			System.exit(1);
 		}
+		projectPath += File.separator;
 	}
 
 	private static LoggerThread loggerThread = new LoggerThread();
