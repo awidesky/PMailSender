@@ -106,7 +106,7 @@ public class DropboxFileUploader {
 	
 	private void readConfig() throws Exception {
 
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getProjectPath() + "dropboxAuth.txt")))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(MailSender.projectPath + "dropboxAuth.txt")))) {
 
 			clientIdentifier = br.readLine().split("=")[1].trim();
 			appKey = br.readLine().split("=")[1].trim();
@@ -117,7 +117,7 @@ public class DropboxFileUploader {
 		} catch (FileNotFoundException nf) {
 			SwingDialogs.error(nf.toString(), "Please write dropbox auth information and restart the application!\n%e%", nf, true);
 			try {
-				File f = new File(ConfigFilePathGetter.getProjectPath() + "dropboxAuth.txt");
+				File f = new File(MailSender.projectPath + "dropboxAuth.txt");
 				f.createNewFile();
 				try(PrintWriter pw = new PrintWriter(f)) {
 					pw.println("App Identifier = ");

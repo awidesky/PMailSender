@@ -33,9 +33,12 @@ import javax.swing.SwingUtilities;
 
 import io.github.awidesky.guiUtil.LoggerThread;
 import io.github.awidesky.guiUtil.SwingDialogs;
+import net.harawata.appdirs.AppDirsFactory;
 
 
 public class MailSender {
+
+	public static final String projectPath = AppDirsFactory.getInstance().getUserDataDir("PMailSender", null, "awidesky") + File.separator;
 
 	private static LoggerThread loggerThread = new LoggerThread();
 	
@@ -142,7 +145,7 @@ public class MailSender {
 			});
 		});
 		loggerThread.setDatePrefix(new SimpleDateFormat("[kk:mm:ss.SSS]"));
-		File logFolder = new File(ConfigFilePathGetter.getProjectPath() + "logs");
+		File logFolder = new File(projectPath + "logs");
 		File logFile = new File(logFolder.getAbsolutePath() + File.separator + "log-" + new SimpleDateFormat("yyyy-MM-dd-kk-mm-ss").format(new Date()) + ".txt");
 		logFolder.mkdirs();
 		try {
@@ -203,7 +206,7 @@ public class MailSender {
 		
 		mainFrame.log("Reading arguments and config files...");
 
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getProjectPath() + "config.txt")))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(projectPath + "config.txt")))) {
 
 			host = br.readLine().substring(7);
 			user = br.readLine().substring(7);
@@ -221,7 +224,7 @@ public class MailSender {
 		} catch (FileNotFoundException | StringIndexOutOfBoundsException nf) {
 			SwingDialogs.error(nf.toString(), "Please write smtp configuration(password is optional) and restart the application!\n%e%", nf, true);
 			try {
-				File f = new File(ConfigFilePathGetter.getProjectPath() + "config.txt");
+				File f = new File(projectPath + "config.txt");
 				if(!f.exists()) f.createNewFile();
 				try(PrintWriter pw = new PrintWriter(f)) {
 					pw.println("host = ");
@@ -271,7 +274,7 @@ public class MailSender {
 		
 	private static void sendSavedMail() throws Exception {
 		
-		BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailContent.txt")));
+		BufferedReader br = new BufferedReader(new FileReader(new File(projectPath + "lastTriedMailContent.txt")));
 		String line = null, title;
 		List<String> content = new LinkedList<>();
 		
@@ -286,14 +289,14 @@ public class MailSender {
 		setSavedAttatchment();
 		send(title, content.stream().collect(Collectors.joining(System.lineSeparator())), files);
 		
-		new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailContent.txt").delete();
-		new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailAttachment.txt").delete();
+		new File(projectPath + "lastTriedMailContent.txt").delete();
+		new File(projectPath + "lastTriedMailAttachment.txt").delete();
 		
 	}
 
 	private static void setSavedAttatchment() throws Exception {
 		
-		BufferedReader br = new BufferedReader(new FileReader(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailAttachment.txt")));
+		BufferedReader br = new BufferedReader(new FileReader(new File(projectPath + "lastTriedMailAttachment.txt")));
 		String line = null;
 		files = new LinkedList<>();
 		
@@ -307,8 +310,8 @@ public class MailSender {
 	
 	private static void saveMail(String title, String content, List<File> files2) {
 
-		try (PrintWriter pw1 = new PrintWriter(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailContent.txt"));
-				PrintWriter pw2 = new PrintWriter(new File(ConfigFilePathGetter.getProjectPath() + "lastTriedMailAttachment.txt"))) {
+		try (PrintWriter pw1 = new PrintWriter(new File(projectPath + "lastTriedMailContent.txt"));
+				PrintWriter pw2 = new PrintWriter(new File(projectPath + "lastTriedMailAttachment.txt"))) {
 
 			pw1.println(title);
 			pw1.println(content);
