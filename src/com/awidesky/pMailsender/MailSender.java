@@ -37,7 +37,7 @@ import io.github.awidesky.guiUtil.SwingDialogs;
 
 public class MailSender {
 
-	public static String projectPath = "";//AppDirsFactory.getInstance().getUserDataDir("PMailSender", null, "awidesky") + File.separator;
+	public static String projectPath = "";
 	static {
 		String home = System.getProperty("user.home");
 		String os = System.getProperty("os.name").toLowerCase();
@@ -49,10 +49,10 @@ public class MailSender {
 			// Assume linux.
 			projectPath = home + "/.local/share/awidesky/PMailSender";
 		}
-		try {
-			new File(projectPath).createNewFile();
-		} catch (IOException e) {
-			SwingDialogs.error("Cannot detect appdata directory!", projectPath + "\nis not a valid data directory!\n%e%", e, true);
+		File f = new File(projectPath);
+		f.mkdirs();
+		if (!f.exists()) {
+			SwingDialogs.error("Cannot detect appdata directory!", projectPath + "\nis not a valid data directory!", null, true);
 			System.exit(1);
 		}
 	}
@@ -131,9 +131,8 @@ public class MailSender {
 		
 			send(title, content, files);
 		} catch (Exception e) {
-			SwingDialogs.error("Error!", "%e%", e, true);
 			saveMail(title, content, files);
-			mainFrame.log(e);
+			SwingDialogs.error("Error!", "%e%", e, true);
 			System.exit(1);
 		}
 		loggerThread.shutdown(1000);
@@ -220,30 +219,12 @@ public class MailSender {
 	
 	
 	private static void config(String[] args) {
-		
-		mainFrame.log("Reading arguments and config files...");
-
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(projectPath + "config.txt")))) {
-
-			host = br.readLine().substring(7);
-			user = br.readLine().substring(7);
-			password = br.readLine();
-			if(password.length() <= 11) {
-				mainFrame.log("Password is not set in config.txt or too long!");
-				password = String.valueOf(SwingDialogs.inputPassword("Password", "Enter password : "));
-				if(password == null) SwingDialogs.error("Error", "You didin't type password!", null, true);
-			} else {
-				password = password.substring(11);
-			}
-			port = br.readLine().substring(7);
-			chooserLocation = br.readLine().substring(18);
-
-		} catch (FileNotFoundException | StringIndexOutOfBoundsException nf) {
-			SwingDialogs.error(nf.toString(), "Please write smtp configuration(password is optional) and restart the application!\n%e%", nf, true);
-			try {
-				File f = new File(projectPath + "config.txt");
-				if(!f.exists()) f.createNewFile();
-				try(PrintWriter pw = new PrintWriter(f)) {
+		mainFrame.log("Reading config file from " + projectPath);
+		File configFile = new File(projectPath + "config.txt");
+		try { 
+			if(!configFile.exists()) {
+				configFile.createNewFile();
+				try(PrintWriter pw = new PrintWriter(configFile)) {
 					pw.println("host = ");
 					pw.println("user = ");
 					pw.println("password = ");
@@ -258,18 +239,38 @@ public class MailSender {
 					pw.println("port = 465");
 					pw.println("chooserLocation = C:\\Users\\John Doe\\Downloads");
 				}
-				Desktop.getDesktop().open(f);
-				mainFrame.log(nf);
-				System.exit(1);
-			} catch (IOException e) {
-				mainFrame.log(e);
-				System.exit(1);
+				throw new FileNotFoundException(configFile.getAbsolutePath() + " was not found!");
 			}
+
+			try (BufferedReader br = new BufferedReader(new FileReader(configFile))) {
+
+				host = br.readLine().substring(7);
+				user = br.readLine().substring(7);
+				password = br.readLine();
+				if(password.length() <= 11) {
+					mainFrame.log("Password is not set in config.txt or too long!");
+					password = String.valueOf(SwingDialogs.inputPassword("Password", "Enter password : "));
+					if(password == null) SwingDialogs.error("Error", "You didin't type password!", null, true);
+				} else {
+					password = password.substring(11);
+				}
+				port = br.readLine().substring(7);
+				chooserLocation = br.readLine().substring(18);
+
+			} 
+
 		} catch (Exception e1) {
-			mainFrame.log(e1);
+			SwingDialogs.error(e1.toString(), "Please write valid smtp configuration(password is optional) and restart the application!\n%e%", e1, true);
+			try {
+				Desktop.getDesktop().open(configFile);
+			} catch (IOException e) {
+				SwingDialogs.error("Unable to open : " + configFile.getAbsolutePath(), "%e%", e, true);
+			}
 			System.exit(1);
 		}
 		
+		
+		mainFrame.log("Checking Command line argument...");
 		for (int i = 0; i < args.length; i++) {
 
 			if (args[i].startsWith("-title=")) {
