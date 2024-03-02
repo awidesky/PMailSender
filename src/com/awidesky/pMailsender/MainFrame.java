@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -33,6 +34,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.Border;
 import javax.swing.filechooser.FileFilter;
 
 import io.github.awidesky.guiUtil.SwingDialogs;
@@ -65,7 +67,7 @@ public class MainFrame extends JFrame {
 	public void setUp() {
 		setDialog();
 		setLayout(new BorderLayout(5, 5));
-		setSize(200, 300);
+		setSize(610, 620);
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		
 		
@@ -79,16 +81,19 @@ public class MainFrame extends JFrame {
 		JPanel consoles = new JPanel();
 		consoles.setLayout(new BoxLayout(consoles, BoxLayout.Y_AXIS));
 		files.setEditable(false);
-		files.setBackground(Color.BLACK);
-		files.setForeground(Color.WHITE);
+		files.setLineWrap(true);
 		console.setEditable(false);
-		console.setBackground(Color.BLACK);
-		console.setForeground(Color.WHITE);
-		JScrollPane jsc_files = new JScrollPane(files);
-		JScrollPane jsc_console = new JScrollPane(console);
+		console.setLineWrap(true);
+		Border border = BorderFactory.createLineBorder(Color.BLACK, 2);
+		JScrollPane jsc_files = new JScrollPane(files, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		JScrollPane jsc_console = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		jsc_files.setBorder(border);
+		jsc_console.setBorder(border);
 		consoles.add(Box.createVerticalStrut(5));
+		consoles.add(Box.createHorizontalStrut(5));
 		consoles.add(jsc_files);
 		consoles.add(Box.createVerticalStrut(5));
+		consoles.add(Box.createHorizontalStrut(5));
 		consoles.add(jsc_console);
 		add(consoles, BorderLayout.CENTER);
 		
@@ -117,7 +122,7 @@ public class MainFrame extends JFrame {
 		setLocation(dim.width / 2 - getSize().width / 2, dim.height / 2 - getSize().height / 2);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle("PMailSender");
-        setVisible(true);  
+        setVisible(true);
 	}
 	
 
