@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 import javax.activation.DataHandler;
@@ -83,11 +84,16 @@ public class MailSender {
 		
 		try {
 
-			SwingUtilities.invokeLater(mainFrame::setUp);;
+			CountDownLatch latch = new CountDownLatch(1);
+			SwingUtilities.invokeLater(() -> {
+				mainFrame.setUp();
+				latch.countDown();
+			});
 			config(args);
 			setSession();
 			if(checkLastAttempt()) return;
-
+			latch.await();
+			
 			mainFrame.log("Running...");
 
 			File startPath = new File(chooserLocation);
