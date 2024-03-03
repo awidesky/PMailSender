@@ -32,8 +32,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.Border;
 import javax.swing.filechooser.FileFilter;
 
@@ -44,25 +42,14 @@ public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = 7255143921312710354L;
 	private JDialog dialog = new JDialog();
-	private JFileChooser chooser = new JFileChooser() {
-
-		private static final long serialVersionUID = 1685021336154920714L;
-
-		@Override
-		protected JDialog createDialog(Component parent) throws HeadlessException {
-			JDialog d = super.createDialog(parent);
-			d.setModalityType(ModalityType.DOCUMENT_MODAL);
-			d.setAlwaysOnTop(true);
-			return d;
-		}
-	};
+	private JFileChooser chooser;
 	
 	private JLabel title = new JLabel("Title : ");
 	private JLabel content = new JLabel("Content : ");
 	private JTextField tf_title;
 	private JTextField tf_content;
-	private JTextArea files = new JTextArea(10, 50);
-	private JTextArea console = new JTextArea(20, 50);
+	private JTextArea files = new JTextArea(10, 70);
+	private JTextArea console = new JTextArea(20, 70);
 	private JButton openConfig = new JButton("config.txt");
 	private JButton openDropbox = new JButton("dropboxAuth.txt");
 	
@@ -77,12 +64,7 @@ public class MainFrame extends JFrame {
 	
 	public void setUp() {
 		log("Preparing GUI...");
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-				| UnsupportedLookAndFeelException e) {
-			SwingDialogs.error("Cannot set Look&Feel", "%e%", e, true);
-		}
+
 		setDialog();
 		setLayout(new BorderLayout(5, 5));
 		setSize(610, 620);
@@ -102,11 +84,8 @@ public class MainFrame extends JFrame {
 		files.setLineWrap(true);
 		console.setEditable(false);
 		console.setLineWrap(true);
-		Border border = BorderFactory.createLineBorder(Color.BLACK, 2);
 		JScrollPane jsc_files = new JScrollPane(files, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		JScrollPane jsc_console = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		jsc_files.setBorder(border);
-		jsc_console.setBorder(border);
 		consoles.add(Box.createVerticalStrut(5));
 		consoles.add(Box.createHorizontalStrut(5));
 		consoles.add(jsc_files);
@@ -146,6 +125,18 @@ public class MainFrame extends JFrame {
 
 	private void setDialog() {
 		
+		chooser = new JFileChooser() {
+
+			private static final long serialVersionUID = 1685021336154920714L;
+
+			@Override
+			protected JDialog createDialog(Component parent) throws HeadlessException {
+				JDialog d = super.createDialog(parent);
+				d.setModalityType(ModalityType.DOCUMENT_MODAL);
+				d.setAlwaysOnTop(true);
+				return d;
+			}
+		};
 		dialog.setAlwaysOnTop(true);
 		
 		ImageViewer imageV = new ImageViewer(chooser);

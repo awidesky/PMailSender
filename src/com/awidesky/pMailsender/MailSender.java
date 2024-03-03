@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 import javax.activation.DataHandler;
@@ -33,6 +32,8 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import io.github.awidesky.guiUtil.LoggerThread;
 import io.github.awidesky.guiUtil.SwingDialogs;
@@ -77,7 +78,7 @@ public class MailSender {
 	private static final Properties props = new Properties();
 	private static Session session;
 	
-	private static MainFrame mainFrame = new MainFrame(loggerThread.getLogger(), title, content);
+	private static MainFrame mainFrame;
 	private static List<File> files = new LinkedList<>();
 	
 	public static void main(String[] args) {
@@ -86,15 +87,19 @@ public class MailSender {
 		
 		try {
 
-			CountDownLatch latch = new CountDownLatch(1);
-			SwingUtilities.invokeLater(() -> {
+			SwingUtilities.invokeAndWait(() -> {
+				try {
+					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+				} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+						| UnsupportedLookAndFeelException e) {
+					SwingDialogs.error("Cannot set Look&Feel", "%e%", e, true);
+				}
+				mainFrame = new MainFrame(loggerThread.getLogger(), title, content);
 				mainFrame.setUp();
-				latch.countDown();
 			});
 			config(args);
 			setSession();
 			if(checkLastAttempt()) return;
-			latch.await();
 			
 			mainFrame.log("Running...");
 
