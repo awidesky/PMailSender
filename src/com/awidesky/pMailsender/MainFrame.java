@@ -43,8 +43,19 @@ import io.github.awidesky.guiUtil.TaskLogger;
 public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = 7255143921312710354L;
-	private JDialog dialog = new JDialog();;
-	private JFileChooser chooser;
+	private JDialog dialog = new JDialog();
+	private JFileChooser chooser = new JFileChooser() {
+
+		private static final long serialVersionUID = 1685021336154920714L;
+
+		@Override
+		protected JDialog createDialog(Component parent) throws HeadlessException {
+			JDialog d = super.createDialog(parent);
+			d.setModalityType(ModalityType.DOCUMENT_MODAL);
+			d.setAlwaysOnTop(true);
+			return d;
+		}
+	};
 	
 	private JLabel title = new JLabel("Title : ");
 	private JLabel content = new JLabel("Content : ");
@@ -65,6 +76,13 @@ public class MainFrame extends JFrame {
 	}
 	
 	public void setUp() {
+		log("Preparing GUI...");
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+				| UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
 		setDialog();
 		setLayout(new BorderLayout(5, 5));
 		setSize(610, 620);
@@ -128,28 +146,8 @@ public class MainFrame extends JFrame {
 
 	private void setDialog() {
 		
-		log("Preparing GUI...");
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-				| UnsupportedLookAndFeelException e) {
-			e.printStackTrace();
-		}
-
 		dialog.setAlwaysOnTop(true);
 		
-		chooser = new JFileChooser() {
-
-			private static final long serialVersionUID = 1685021336154920714L;
-
-			@Override
-			protected JDialog createDialog(Component parent) throws HeadlessException {
-				JDialog d = super.createDialog(parent);
-				d.setModalityType(ModalityType.DOCUMENT_MODAL);
-				d.setAlwaysOnTop(true);
-				return d;
-			}
-		};
 		ImageViewer imageV = new ImageViewer(chooser);
 		chooser.setMultiSelectionEnabled(true);
 		chooser.setAccessory(imageV);

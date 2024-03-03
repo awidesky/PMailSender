@@ -140,11 +140,12 @@ public class MailSender {
 		} catch (Exception e) {
 			saveMail(title, content, files);
 			SwingDialogs.error("Error!", "%e%", e, true);
-			System.exit(1);
 		}
+		SwingUtilities.invokeLater(mainFrame::dispose);
 		loggerThread.shutdown(1000);
-	
+		
 	}
+	
 	private static void setupLogging() {
 		/** Set Default Uncaught Exception Handlers */
 		Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
