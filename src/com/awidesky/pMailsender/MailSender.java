@@ -22,6 +22,7 @@ import javax.activation.FileDataSource;
 import javax.mail.AuthenticationFailedException;
 import javax.mail.Authenticator;
 import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
@@ -204,13 +205,13 @@ public class MailSender {
 		
 	}
 	
-	private static void resetLogin() {
-		user = SwingDialogs.input("Username for " + host, "Username :");
+	private static void resetLogin() throws MessagingException {
+		user = SwingDialogs.input("Username for " + host, "Username :", user);
 		password = String.valueOf(SwingDialogs.inputPassword("Password for " + user, "Password :"));
 		setSession();
 	}
 
-	private static void setSession() {
+	private static void setSession() throws MessagingException {
 		
 		mainFrame.log("Preparing session...");
 		
@@ -230,6 +231,16 @@ public class MailSender {
 				return new PasswordAuthentication(user, password);
 			}
 		});
+		
+		try {
+			Transport transport;
+			transport = session.getTransport();
+			transport.connect();
+			transport.close();
+		} catch (AuthenticationFailedException e) {
+			SwingDialogs.error("Authentication Failed!", "%e%", e, true);
+			resetLogin();
+		}
 	}
 	
 	

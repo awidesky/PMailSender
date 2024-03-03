@@ -81,7 +81,7 @@ public class MainFrame extends JFrame {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 				| UnsupportedLookAndFeelException e) {
-			e.printStackTrace();
+			SwingDialogs.error("Cannot set Look&Feel", "%e%", e, true);
 		}
 		setDialog();
 		setLayout(new BorderLayout(5, 5));
