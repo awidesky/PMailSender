@@ -99,7 +99,10 @@ public class MailSender {
 			});
 			config(args);
 			setSession();
-			if(checkLastAttempt()) return;
+			if(checkLastAttempt()) {
+				exit();
+				return;
+			}
 			
 			mainFrame.log("Running...");
 
@@ -148,11 +151,10 @@ public class MailSender {
 			saveMail(title, content, files);
 			SwingDialogs.error("Error!", "%e%", e, true);
 		}
-		SwingUtilities.invokeLater(mainFrame::dispose);
-		loggerThread.shutdown(1000);
-		
+		exit();
 	}
 	
+
 	private static void setupLogging() {
 		/** Set Default Uncaught Exception Handlers */
 		Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
@@ -196,14 +198,14 @@ public class MailSender {
 	 * */
 	private static boolean checkLastAttempt() throws Exception {
 		
-		if (new File("lastTriedMailContent.txt").exists()) {
+		if (new File(projectPath + "lastTriedMailContent.txt").exists()) {
 			
 			if (SwingDialogs.confirm("Retry sending last saved mail?", "Last attempt wasn't successful!")) {
 				sendSavedMail();
 				return true;
 			} else {
-				new File("lastTriedMailContent.txt").delete();
-				new File("lastTriedMailAttachment.txt").delete();
+				new File(projectPath + "lastTriedMailContent.txt").delete();
+				new File(projectPath + "lastTriedMailAttachment.txt").delete();
 			}
 		}
 		return false;
@@ -426,5 +428,9 @@ public class MailSender {
 	}
 	
 
+	private static void exit() {
+		SwingUtilities.invokeLater(mainFrame::dispose);
+		loggerThread.shutdown(1000);
+	}
 }
 
