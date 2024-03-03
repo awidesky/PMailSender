@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
+import javax.mail.AuthenticationFailedException;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.Multipart;
@@ -202,6 +203,12 @@ public class MailSender {
 		return false;
 		
 	}
+	
+	private static void resetLogin() {
+		user = SwingDialogs.input("Username for " + host, "Username :");
+		password = String.valueOf(SwingDialogs.inputPassword("Password for " + user, "Password :"));
+		setSession();
+	}
 
 	private static void setSession() {
 		
@@ -220,7 +227,7 @@ public class MailSender {
 
 		session = Session.getInstance(props, new Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(user, String.valueOf(password));
+				return new PasswordAuthentication(user, password);
 			}
 		});
 	}
@@ -390,7 +397,14 @@ public class MailSender {
 		message.setContent(mp, "text/html;charset=UTF-8");
 			
 		mainFrame.log("\tSending Message...");
-		Transport.send(message);
+		try {
+			Transport.send(message);
+		} catch (AuthenticationFailedException e) {
+			SwingDialogs.error("Authentication Failed", "%e%", e, true);
+			resetLogin();
+			send(title, content, attatch);
+			return;
+		}
 		mainFrame.log("\nMessage Sent Successfully!");
 		SwingDialogs.information("Message Sent Successfully!", "Done!", true);
 	}
