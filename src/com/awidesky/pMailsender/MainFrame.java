@@ -1,7 +1,6 @@
 package com.awidesky.pMailsender;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dialog.ModalityType;
@@ -19,7 +18,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -32,7 +30,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
 import javax.swing.filechooser.FileFilter;
 
 import io.github.awidesky.guiUtil.SwingDialogs;
@@ -52,6 +49,7 @@ public class MainFrame extends JFrame {
 	private JTextArea console = new JTextArea(20, 70);
 	private JButton openConfig = new JButton("config.txt");
 	private JButton openDropbox = new JButton("dropboxAuth.txt");
+	private JButton openAppFolder = new JButton("open app folder");
 	
 	private TaskLogger logger;
 	
@@ -111,8 +109,17 @@ public class MainFrame extends JFrame {
 				SwingDialogs.error("Cannot open dropboxAuth file!", "%e%", e, false);
 			}
 		});
+		openAppFolder.addActionListener(i -> {
+			try {
+				File f = new File(MailSender.projectPath);
+				Desktop.getDesktop().open(f);
+			} catch (IOException e) {
+				SwingDialogs.error("Cannot open app folder!", "%e%", e, false);
+			}
+		});
 		buttons.add(openConfig);
 		buttons.add(openDropbox);
+		buttons.add(openAppFolder);
 		add(buttons, BorderLayout.SOUTH);
 		
 		pack();
