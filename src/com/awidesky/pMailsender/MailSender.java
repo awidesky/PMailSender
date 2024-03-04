@@ -16,21 +16,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
-import javax.mail.AuthenticationFailedException;
-import javax.mail.Authenticator;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -38,6 +23,21 @@ import javax.swing.UnsupportedLookAndFeelException;
 import io.github.awidesky.guiUtil.LoggerThread;
 import io.github.awidesky.guiUtil.SwingDialogs;
 import io.github.awidesky.guiUtil.TaskLogger;
+import jakarta.activation.DataHandler;
+import jakarta.activation.FileDataSource;
+import jakarta.mail.AuthenticationFailedException;
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.internet.MimeUtility;
 
 
 public class MailSender {
@@ -161,7 +161,7 @@ public class MailSender {
 		/** Set Default Uncaught Exception Handlers */
 		Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
 			try {
-				SwingDialogs.error("Unhandled exception in thread " + t.getName() + " : " + ((Exception)e).getClass().getName(), "%e%", (Exception)e , true);
+				SwingDialogs.error("Unhandled exception in thread " + t.getName() + " : " + e.getClass().getName(), "%e%", e , true);
 				loggerThread.shutdown(1000);
 				System.exit(2);
 			} catch(Exception err) {
@@ -171,7 +171,7 @@ public class MailSender {
 		SwingUtilities.invokeLater(() -> {
 			Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
 				try {
-					SwingDialogs.error("Unhandled exception in EDT : " + ((Exception) e).getClass().getName(), "%e%", (Exception) e, true);
+					SwingDialogs.error("Unhandled exception in EDT : " + e.getClass().getName(), "%e%", e, true);
 					loggerThread.shutdown(1000);
 					System.exit(2);
 				} catch (Exception err) {
@@ -233,6 +233,7 @@ public class MailSender {
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.ssl.trust", host);
 		props.put("mail.smtp.ssl.enable", "true");
+		props.put("mail.debug", "true");
 		props.put("mail.smtp.connectiontimeout", "5000");
 		//mail.smtp.ssl.protocols TLSv1.2
 		props.put("mail.smtp.starttls.enable", "true");
@@ -240,10 +241,11 @@ public class MailSender {
 		logger.log("asdf");
 		session = Session.getInstance(props, new Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
+				logger.log("aaaa");
 				return new PasswordAuthentication(user, password);
 			}
 		});
-		logger.log("asdf");
+		logger.log("dddd");
 		
 		try {
 			Transport transport;
