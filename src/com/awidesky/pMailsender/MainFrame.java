@@ -45,8 +45,8 @@ public class MainFrame extends JFrame {
 	private JLabel content = new JLabel("Content : ");
 	private JTextField tf_title;
 	private JTextField tf_content;
-	private JTextArea files = new JTextArea(10, 70);
-	private JTextArea console = new JTextArea(20, 70);
+	private JTextArea files = new JTextArea();
+	private JTextArea console = new JTextArea();
 	private JButton openConfig = new JButton("config.txt");
 	private JButton openDropbox = new JButton("dropboxAuth.txt");
 	private JButton openAppFolder = new JButton("open app folder");
@@ -80,8 +80,10 @@ public class MainFrame extends JFrame {
 		consoles.setLayout(new BoxLayout(consoles, BoxLayout.Y_AXIS));
 		files.setEditable(false);
 		files.setLineWrap(true);
+		files.setRows(10);
 		console.setEditable(false);
 		console.setLineWrap(true);
+		console.setRows(15);
 		JScrollPane jsc_files = new JScrollPane(files, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		JScrollPane jsc_console = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		consoles.add(Box.createVerticalStrut(5));
