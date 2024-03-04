@@ -66,6 +66,30 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<executions>
+					<execution>
+						<id>copy-resource-one</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/app-image</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>icon.png</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.panteleyev</groupId>
 				<artifactId>jpackage-maven-plugin</artifactId>
 				<version>1.4.0</version>
@@ -128,6 +152,7 @@
 						<artifactId>jpackage-maven-plugin</artifactId>
 						<version>1.4.0</version>
 						<configuration>
+							<icon>${basedir}/icon.ico</icon>
 							<type>MSI</type>
 							<winMenu>true</winMenu>
 							<winShortcut>true</winShortcut>
@@ -150,6 +175,7 @@
 						<artifactId>jpackage-maven-plugin</artifactId>
 						<version>1.4.0</version>
 						<configuration>
+							<icon>${basedir}/icon.icns</icon>
 							<type>PKG</type>
 							<macPackageIdentifier>PMailSender-${project.version}</macPackageIdentifier>
 							<macPackageName>PMailSender</macPackageName>

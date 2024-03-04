@@ -6,6 +6,8 @@ import java.awt.Desktop;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.Taskbar;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -18,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -55,6 +58,14 @@ public class MainFrame extends JFrame {
 	
 	public MainFrame(TaskLogger taskLogger, String t, String c) {
 		super();
+		/*try {
+			SwingDialogs.information("", new File("/Applications/PMailSender.app/Contents/app/icon.png").getAbsolutePath(), true);
+			Image image = ImageIO.read(new File("/Applications/PMailSender.app/Contents/app/icon.png"));
+			setIconImage(image);
+			Taskbar.getTaskbar().setIconImage(image);
+		} catch (IOException e) {
+			SwingDialogs.error("Cannot set icon image", e.toString() + "\n%e%", e, false);
+		}*/
 		this.logger = taskLogger;
 		tf_title = new JTextField(t, 10);
 		tf_content = new JTextField(c, 20);
