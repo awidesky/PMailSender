@@ -37,6 +37,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import io.github.awidesky.guiUtil.LoggerThread;
 import io.github.awidesky.guiUtil.SwingDialogs;
+import io.github.awidesky.guiUtil.TaskLogger;
 
 
 public class MailSender {
@@ -63,6 +64,7 @@ public class MailSender {
 	}
 
 	private static LoggerThread loggerThread = new LoggerThread();
+	private static TaskLogger logger = loggerThread.getLogger();
 	
 	private static String host;
 	private static String user;
@@ -198,6 +200,7 @@ public class MailSender {
 	 * */
 	private static boolean checkLastAttempt() throws Exception {
 		
+		logger.log("Check last attempt...");
 		if (new File(projectPath + "lastTriedMailContent.txt").exists()) {
 			
 			if (SwingDialogs.confirm("Retry sending last saved mail?", "Last attempt wasn't successful!")) {
@@ -230,24 +233,31 @@ public class MailSender {
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.ssl.trust", host);
 		props.put("mail.smtp.ssl.enable", "true");
+		props.put("mail.smtp.connectiontimeout", "5000");
 		//mail.smtp.ssl.protocols TLSv1.2
 		props.put("mail.smtp.starttls.enable", "true");
 
+		logger.log("asdf");
 		session = Session.getInstance(props, new Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
 				return new PasswordAuthentication(user, password);
 			}
 		});
+		logger.log("asdf");
 		
 		try {
 			Transport transport;
 			transport = session.getTransport();
+			logger.log("asdf");
 			transport.connect();
+			logger.log("asdf");
 			transport.close();
+			logger.log("asdf");
 		} catch (AuthenticationFailedException e) {
 			SwingDialogs.error("Authentication Failed!", "%e%", e, true);
 			resetLogin();
 		}
+		logger.log("asdf");
 	}
 	
 	
