@@ -96,7 +96,7 @@
 				<configuration>
 					<input>${project.build.directory}/app-image</input>
 					<destination>${project.build.directory}/build</destination>
-					<addModules>java.base,java.desktop,java.logging</addModules>
+					<addModules>java.base,java.desktop,java.logging,jdk.crypto.ec</addModules>
 					<mainJar>PMailSender.jar</mainJar>
 					<mainClass>com.awidesky.pMailsender.MailSender</mainClass>
 					<name>PMailSender</name>
