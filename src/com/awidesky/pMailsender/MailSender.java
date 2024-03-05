@@ -3,18 +3,24 @@ package com.awidesky.pMailsender;
 import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -70,6 +76,7 @@ public class MailSender {
 	private static String user;
 	private static String password;
 	private static String port;
+	private static String jmaildebug;
 	private static String chooserLocation = ".";
 	
 	private static String title = "P";
@@ -233,33 +240,45 @@ public class MailSender {
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.ssl.trust", host);
 		props.put("mail.smtp.ssl.enable", "true");
-		props.put("mail.debug", "true");
+		props.put("mail.debug", jmaildebug);
 		props.put("mail.smtp.connectiontimeout", "5000");
 		//mail.smtp.ssl.protocols TLSv1.2
 		props.put("mail.smtp.starttls.enable", "true");
 
-		logger.log("asdf");
 		session = Session.getInstance(props, new Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
-				logger.log("aaaa");
 				return new PasswordAuthentication(user, password);
 			}
 		});
-		logger.log("dddd");
+		
+		session.setDebugOut(new PrintStream(new OutputStream() {
+			private final TaskLogger tl = loggerThread.getLogger("[jakarta.mail] ");
+			@Override
+			public void write(int b) throws IOException {
+				write(new byte[] {(byte)b});
+			}
+
+			@Override
+			public void write(byte[] b) throws IOException {
+				super.write(b);
+			}
+
+			@Override
+			public void write(byte[] b, int off, int len) throws IOException {
+				tl.log(new String(b, off, len, Charset.defaultCharset()).stripTrailing());
+			}
+			
+		}));
 		
 		try {
 			Transport transport;
 			transport = session.getTransport();
-			logger.log("asdf");
 			transport.connect();
-			logger.log("asdf");
 			transport.close();
-			logger.log("asdf");
 		} catch (AuthenticationFailedException e) {
 			SwingDialogs.error("Authentication Failed!", "%e%", e, true);
 			resetLogin();
 		}
-		logger.log("asdf");
 	}
 	
 	
@@ -274,35 +293,32 @@ public class MailSender {
 					pw.println("user = ");
 					pw.println("password = ");
 					pw.println("port = ");
+					pw.println("jmail.debug = ");
 					pw.println("chooserLocation = ");
 					pw.println();
 					pw.println();
 					pw.println("#for example :");
-					pw.println("host = smtp.gmail.com");
-					pw.println("user = JohnDoe@gmail.com");
-					pw.println("password = doeAdearFema1eDeer1234");
-					pw.println("port = 465");
-					pw.println("chooserLocation = C:\\Users\\John Doe\\Downloads");
+					pw.println("#host = smtp.gmail.com");
+					pw.println("#user = JohnDoe@gmail.com");
+					pw.println("#password = doeAdearFema1eDeer1234");
+					pw.println("#port = 465");
+					pw.println("#jmail.debug = true");
+					pw.println("#chooserLocation = C:\\Users\\John Doe\\Downloads");
 				}
 				throw new FileNotFoundException(configFile.getAbsolutePath() + " was not found!");
 			}
 
-			try (BufferedReader br = new BufferedReader(new FileReader(configFile))) {
-
-				host = br.readLine().substring(7);
-				user = br.readLine().substring(7);
-				password = br.readLine();
-				if(password.length() <= 11) {
-					mainFrame.log("Password is not set in config.txt or too long!");
-					password = String.valueOf(SwingDialogs.inputPassword("Password", "Enter password : "));
-					if(password == null) SwingDialogs.error("Error", "You didin't type password!", null, true);
-				} else {
-					password = password.substring(11);
-				}
-				port = br.readLine().substring(7);
-				chooserLocation = br.readLine().substring(18);
-
-			} 
+			Properties config = new Properties();
+			config.load(new FileInputStream(configFile));
+			if(Stream.of(host = config.getProperty("host"),
+					user = config.getProperty("user"),
+					password = config.getProperty("password", String.valueOf(SwingDialogs.inputPassword("Password", "Enter password : "))),
+					port = config.getProperty("port"),
+					jmaildebug = config.getProperty("jmail.debug", "false"),
+					chooserLocation = config.getProperty("chooserLocation", System.getProperty("user.home")))
+					.anyMatch(Objects::isNull)) {
+				throw new RuntimeException("One(s) of the properties are invalid!");
+			}
 
 		} catch (Exception e1) {
 			SwingDialogs.error(e1.toString(), "Please write valid smtp configuration(password is optional) and restart the application!\n%e%", e1, true);
@@ -311,6 +327,7 @@ public class MailSender {
 			} catch (IOException e) {
 				SwingDialogs.error("Unable to open : " + configFile.getAbsolutePath(), "%e%", e, true);
 			}
+			exit();
 			System.exit(1);
 		}
 		
