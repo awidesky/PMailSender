@@ -310,9 +310,9 @@ public class MailSender {
 
 			Properties config = new Properties();
 			config.load(new FileInputStream(configFile));
+			if(Objects.isNull(password = config.getProperty("password"))) password = String.valueOf(SwingDialogs.inputPassword("Password", "Enter password : "));
 			if(Stream.of(host = config.getProperty("host"),
 					user = config.getProperty("user"),
-					password = config.getProperty("password", String.valueOf(SwingDialogs.inputPassword("Password", "Enter password : "))),
 					port = config.getProperty("port"),
 					jmaildebug = config.getProperty("jmail.debug", "false"),
 					chooserLocation = config.getProperty("chooserLocation", System.getProperty("user.home")))
