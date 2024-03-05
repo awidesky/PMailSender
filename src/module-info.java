@@ -1,9 +1,4 @@
-/**
- * 
- */
-/**
- * 
- */
+
 module com.awidesky.pMailSender {
 	requires java.desktop;
 	requires GUIUtil;
