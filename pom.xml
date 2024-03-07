@@ -28,41 +28,36 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/app-image/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.3.0</version>
 				<configuration>
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
+							<classpathPrefix>app-image/lib/</classpathPrefix>
 							<mainClass>com.awidesky.pMailsender.MailSender</mainClass>
 						</manifest>
 					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.6.0</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<outputDirectory>${project.build.directory}/app-image</outputDirectory>
-					<archive>
-						<manifest>
-							<mainClass>com.awidesky.pMailsender.MailSender</mainClass>
-						</manifest>
-					</archive>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<appendAssemblyId>false</appendAssemblyId>
-					<finalName>PMailSender</finalName>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -84,6 +79,12 @@
 										<include>icon.png</include>
 									</includes>
 								</resource>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>PMailSender-${project.version}.jar</include>
+									</includes>
+								</resource>
 							</resources>
 						</configuration>
 					</execution>
@@ -96,8 +97,10 @@
 				<configuration>
 					<input>${project.build.directory}/app-image</input>
 					<destination>${project.build.directory}/build</destination>
-					<addModules>java.base,java.desktop,java.logging,jdk.crypto.ec</addModules>
-					<mainJar>PMailSender.jar</mainJar>
+					<modulePaths>
+						<modulePath>${project.build.directory}/app-image/lib/</modulePath>
+					</modulePaths>
+					<mainJar>PMailSender-${project.version}.jar</mainJar>
 					<mainClass>com.awidesky.pMailsender.MailSender</mainClass>
 					<name>PMailSender</name>
 					<vendor>Eugene Hong</vendor>
