@@ -120,6 +120,8 @@ public class MailSender {
 
 			title = mainFrame.getTitle();
 			content = mainFrame.getContent();
+			
+			if(files.stream().distinct().count() != files.size()) mainFrame.log("[WARNING] Same files will not be attached multiple times!");
 
 			files = files.stream().distinct().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(LinkedList::new));
 
