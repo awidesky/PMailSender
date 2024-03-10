@@ -47,6 +47,8 @@ public class MainFrame extends JFrame {
 	private JTextField tf_content;
 	private JTextArea files = new JTextArea();
 	private JTextArea console = new JTextArea();
+	private JLabel maxAttat = new JLabel("Attatchment size limit(MB) :");
+	private JTextField tf_maxAttat = new JTextField("10");
 	private JButton openConfig = new JButton("config.txt");
 	private JButton openDropbox = new JButton("dropboxAuth.txt");
 	private JButton openAppFolder = new JButton("open app folder");
@@ -55,14 +57,6 @@ public class MainFrame extends JFrame {
 	
 	public MainFrame(TaskLogger taskLogger, String t, String c) {
 		super();
-		/*try {
-			SwingDialogs.information("", new File("/Applications/PMailSender.app/Contents/app/icon.png").getAbsolutePath(), true);
-			Image image = ImageIO.read(new File("/Applications/PMailSender.app/Contents/app/icon.png"));
-			setIconImage(image);
-			Taskbar.getTaskbar().setIconImage(image);
-		} catch (IOException e) {
-			SwingDialogs.error("Cannot set icon image", e.toString() + "\n%e%", e, false);
-		}*/
 		this.logger = taskLogger;
 		tf_title = new JTextField(t, 10);
 		tf_content = new JTextField(c, 20);
@@ -102,7 +96,7 @@ public class MainFrame extends JFrame {
 		consoles.add(jsc_console);
 		add(consoles, BorderLayout.CENTER);
 		
-		JPanel buttons = new JPanel();
+		JPanel buttons = new JPanel(new BorderLayout());
 		openConfig.addActionListener(i -> {
 			try {
 				Desktop.getDesktop().open(new File(MailSender.projectPath + "config.txt"));
@@ -127,9 +121,15 @@ public class MainFrame extends JFrame {
 				SwingDialogs.error("Cannot open app folder!", "%e%", e, false);
 			}
 		});
-		buttons.add(openConfig);
-		buttons.add(openDropbox);
-		buttons.add(openAppFolder);
+		JPanel bottum_p1 = new JPanel();
+		bottum_p1.add(openConfig);
+		bottum_p1.add(openDropbox);
+		bottum_p1.add(openAppFolder);
+		JPanel bottum_p2 = new JPanel();
+		bottum_p2.add(maxAttat);
+		bottum_p2.add(tf_maxAttat);
+		buttons.add(bottum_p1, BorderLayout.NORTH);
+		buttons.add(bottum_p2, BorderLayout.SOUTH);
 		add(buttons, BorderLayout.SOUTH);
 		
 		pack();
@@ -255,6 +255,16 @@ public class MainFrame extends JFrame {
 		dialog.dispose();
 		disable();
 		return list;
+	}
+	
+
+	public long getAttatchLimit() {
+		try {
+		return Integer.parseInt(tf_maxAttat.getText().strip()) * 1024 * 1024;
+		} catch (NumberFormatException e) {
+			SwingDialogs.error("Invalid integer!", "\"" + tf_maxAttat.getText() + "\"" + " is invalid number!\nConsidering max attachment value as 10MB...", null, true);
+			return 10 * 1024 * 1024;
+		}
 	}
 
 

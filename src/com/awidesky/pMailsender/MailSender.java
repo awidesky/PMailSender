@@ -82,8 +82,6 @@ public class MailSender {
 	private static String title = "P";
 	private static String content = " ";
 	
-	private final static long attatchLimit = 10L * 1024 * 1024;
-	
 	private static final Properties props = new Properties();
 	private static Session session;
 	
@@ -125,11 +123,12 @@ public class MailSender {
 
 			files = files.stream().distinct().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(LinkedList::new));
 
+			long attatchLimit = mainFrame.getAttatchLimit();
 			if (files.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limit)
 
 				title += " + 링크(들)도 클릭";
 				List<File> dropboxed;
-				mainFrame.log("Mail attachment too big! (>10MB)");
+				mainFrame.log("Mail attachment too big! (>" + attatchLimit + "MB)");
 				mainFrame.log("Trying dropbox link instead..");
 
 				dropboxed = files.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
