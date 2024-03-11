@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -260,22 +261,21 @@ public class MainFrame extends JFrame {
 	}
 
 	public List<File> chooseLoop(File startPath) {
-		List<File> list = new LinkedList<>();
+		LinkedHashSet<File> list = new LinkedHashSet<>();
 		
 		while (true) {
-			
 			chooser.setCurrentDirectory(startPath);
 			if (chooser.showOpenDialog(dialog) != JFileChooser.APPROVE_OPTION) break;
 			List<File> temp = Arrays.asList(chooser.getSelectedFiles());
 			startPath = temp.get(temp.size() - 1);
+			if(list.stream().anyMatch(temp::contains)) log("[WARNING] Same files will not be attached multiple times!");
 			list.addAll(temp);
 			selectedFiles(list.stream().map(File::getAbsolutePath).collect(Collectors.joining("\n")));
-		
 		}
 
 		dialog.dispose();
 		disable();
-		return list;
+		return new LinkedList<>(list);
 	}
 	
 
