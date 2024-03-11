@@ -83,10 +83,8 @@ public class MainFrame extends JFrame {
 		JPanel consoles = new JPanel();
 		consoles.setLayout(new BoxLayout(consoles, BoxLayout.Y_AXIS));
 		files.setEditable(false);
-		files.setLineWrap(true);
 		files.setRows(10);
 		console.setEditable(false);
-		console.setLineWrap(true);
 		console.setRows(15);
 		JScrollPane jsc_files = new JScrollPane(files, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		JScrollPane jsc_console = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -139,6 +137,7 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle("PMailSender");
         setVisible(true);
+        System.out.println(console.getColumns());
 	}
 	
 
@@ -221,9 +220,11 @@ public class MainFrame extends JFrame {
 		SwingUtilities.invokeLater(() -> {
 			console.append(str);
 			console.append("\n");
+			adjustSize(console);
 		});
 		logger.log(str);
 	}
+
 	public void log(Exception e) {
 		logger.log(e);
 		StringWriter sw = new StringWriter();
@@ -236,9 +237,27 @@ public class MainFrame extends JFrame {
 		SwingUtilities.invokeLater(() -> {
 			files.setText("Selected Files :\n");
 			files.append(str);
+			adjustSize(files);
 		});
 	}
 
+	private void adjustSize(JTextArea jta) {
+		int h = 0, w = 0;
+		if(jta == console) {
+			h = console.getPreferredSize().height - console.getHeight();
+			w = console.getPreferredSize().width - console.getWidth();
+		} else if(jta == files) {
+			h = files.getPreferredSize().height - files.getHeight();
+			w = files.getPreferredSize().width - files.getWidth();
+		}
+		if(h > 0) jta.setRows((int)jta.getText().lines().count());
+		h = h > 0 ? h : 0;
+		w = w > 0 ? w : 0;
+		w = getX() - w / 2;
+		w = w > 0 ? w : 0;
+		pack();
+		setLocation(w, getY() - h / 2);
+	}
 
 	public List<File> chooseLoop(File startPath) {
 		List<File> list = new LinkedList<>();
