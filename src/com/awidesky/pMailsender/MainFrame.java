@@ -13,9 +13,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.swing.Box;
@@ -48,7 +50,7 @@ public class MainFrame extends JFrame {
 	private JTextArea files = new JTextArea();
 	private JTextArea console = new JTextArea();
 	private JLabel maxAttat = new JLabel("Attatchment size limit(MB) :");
-	private JTextField tf_maxAttat = new JTextField("10");
+	private JTextField tf_maxAttat = new JTextField("10", 3);
 	private JButton openConfig = new JButton("config.txt");
 	private JButton openDropbox = new JButton("dropboxAuth.txt");
 	private JButton openAppFolder = new JButton("open app folder");
@@ -259,12 +261,19 @@ public class MainFrame extends JFrame {
 	
 
 	public long getAttatchLimit() {
+		AtomicInteger value = new AtomicInteger(10);
 		try {
-		return Integer.parseInt(tf_maxAttat.getText().strip()) * 1024 * 1024;
-		} catch (NumberFormatException e) {
+			SwingUtilities.invokeAndWait(() -> {
+				try {
+					value.set(Integer.parseInt(tf_maxAttat.getText().strip()));
+				} catch (NumberFormatException e) {
+					SwingDialogs.error("Invalid integer!", "\"" + tf_maxAttat.getText() + "\"" + " is invalid number!\nConsidering max attachment value as 10MB...", null, true);
+				}
+			});
+		} catch (InvocationTargetException | InterruptedException e) {
 			SwingDialogs.error("Invalid integer!", "\"" + tf_maxAttat.getText() + "\"" + " is invalid number!\nConsidering max attachment value as 10MB...", null, true);
-			return 10 * 1024 * 1024;
 		}
+		return value.get() * 1024 * 1024;
 	}
 
 

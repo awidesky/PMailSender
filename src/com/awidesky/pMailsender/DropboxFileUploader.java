@@ -147,7 +147,6 @@ public class DropboxFileUploader {
 
 	public String uploadFileAndGetLink(List<File> list, String dropboxPath) throws Exception {
 		
-		mainFrame.log();
 		mainFrame.log("Getting download links...");
 		StringBuilder sb = new StringBuilder("");
 		
@@ -187,7 +186,6 @@ public class DropboxFileUploader {
 			}
 		}
 		
-		mainFrame.log();
 		return sb.toString();
 	}
 	
