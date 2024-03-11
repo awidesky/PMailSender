@@ -128,7 +128,7 @@ public class MailSender {
 
 				title += " + 링크(들)도 클릭";
 				List<File> dropboxed;
-				mainFrame.log("Mail attachment too big! (>" + attatchLimit + "MB)");
+				mainFrame.log("Mail attachment too big! (>" + attatchLimit / (1024 * 1024) + "MB)");
 				mainFrame.log("Trying dropbox link instead..");
 
 				dropboxed = files.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
