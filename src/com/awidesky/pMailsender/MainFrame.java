@@ -135,7 +135,7 @@ public class MainFrame extends JFrame {
 		add(buttons, BorderLayout.SOUTH);
 		
 		pack();
-		setLocation(dim.width / 2 - getSize().width / 2, dim.height / 2 - getSize().height / 2);
+		setLocation(dim.width / 2 - getSize().width - chooser.getPreferredSize().width / 2, dim.height / 2 - getSize().height / 2);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle("PMailSender");
         setVisible(true);
