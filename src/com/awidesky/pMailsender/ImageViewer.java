@@ -58,7 +58,10 @@ public class ImageViewer extends JLabel implements PropertyChangeListener {
 		try {
 			if (f == null) return;
 			BufferedImage bi = ImageIO.read(f);
-			if (bi == null) return;
+			if (bi == null) {
+				setIcon(null);
+				return;
+			}
 
 			ImageIcon icon = new ImageIcon(bi);
 			icon = new ImageIcon(icon.getImage().getScaledInstance(-1, getHeight(), Image.SCALE_DEFAULT));
