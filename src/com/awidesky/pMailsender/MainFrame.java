@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,6 +42,7 @@ import io.github.awidesky.guiUtil.TaskLogger;
 public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = 7255143921312710354L;
+	private static final Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 	private JDialog dialog = new JDialog();
 	private JFileChooser chooser;
 	
@@ -71,7 +73,6 @@ public class MainFrame extends JFrame {
 		setDialog();
 		setLayout(new BorderLayout(5, 5));
 		setSize(610, 620);
-		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		
 		
 		JPanel texts = new JPanel();
@@ -138,7 +139,6 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle("PMailSender");
         setVisible(true);
-        System.out.println(console.getColumns());
 	}
 	
 
@@ -234,30 +234,24 @@ public class MainFrame extends JFrame {
 		pw.close(); pw.close();
 		log(sw.toString());
 	}
-	public void selectedFiles(String str) {
+	public void selectedFiles(Collection<File> f) {
 		SwingUtilities.invokeLater(() -> {
-			files.setText("Selected Files :\n");
-			files.append(str);
+			files.setText("Selected Files(" + formatSize(f.stream().mapToLong(File::length).sum()) + ") :\n");
+			files.append(f.stream().map(File::getAbsolutePath).collect(Collectors.joining("\n")));
 			adjustSize(files);
 		});
 	}
 
 	private void adjustSize(JTextArea jta) {
-		int h = 0, w = 0;
-		if(jta == console) {
-			h = console.getPreferredSize().height - console.getHeight();
-			w = console.getPreferredSize().width - console.getWidth();
-		} else if(jta == files) {
-			h = files.getPreferredSize().height - files.getHeight();
-			w = files.getPreferredSize().width - files.getWidth();
-		}
-		if(h > 0) jta.setRows((int)jta.getText().lines().count());
+		int h = jta.getPreferredSize().height - jta.getHeight();
+		int w = jta.getPreferredSize().width - jta.getWidth();
+		if(h > 0) jta.setRows((int)jta.getText().lines().count() + 1);
 		h = h > 0 ? h : 0;
 		w = w > 0 ? w : 0;
 		w = getX() - w / 2;
 		w = w > 0 ? w : 0;
 		pack();
-		setLocation(w, getY() - h / 2);
+		setLocation(w, dim.height / 2 - getSize().height / 2);
 	}
 
 	public List<File> chooseLoop(File startPath) {
@@ -270,7 +264,7 @@ public class MainFrame extends JFrame {
 			startPath = temp.get(temp.size() - 1);
 			if(list.stream().anyMatch(temp::contains)) log("[WARNING] Same files will not be attached multiple times!");
 			list.addAll(temp);
-			selectedFiles(list.stream().map(File::getAbsolutePath).collect(Collectors.joining("\n")));
+			selectedFiles(list);
 		}
 
 		dialog.dispose();
@@ -295,6 +289,22 @@ public class MainFrame extends JFrame {
 		return value.get() * 1024 * 1024;
 	}
 
+
+	private String formatSize(long fileSize) {
+		if(fileSize == 0L) return "0.00byte";
+		
+		switch ((int)(Math.log(fileSize) / Math.log(1024))) {
+		case 0:
+			return String.format("%d", fileSize) + "byte";
+		case 1:
+			return String.format("%.2f", fileSize / 1024.0) + "KB";
+		case 2:
+			return String.format("%.2f", fileSize / (1024.0 * 1024)) + "MB";
+		case 3:
+			return String.format("%.2f", fileSize / (1024.0 * 1024 * 1024)) + "GB";
+		}
+		return String.format("%.2f", fileSize / (1024.0 * 1024 * 1024 * 1024)) + "TB";
+	}
 
 	@Override
 	public void dispose() {
