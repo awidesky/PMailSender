@@ -5,16 +5,17 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -58,7 +59,7 @@ public class DropboxFileUploader {
 	public DropboxFileUploader(MainFrame mainFrame) throws Exception {
 		
 		this.mainFrame = mainFrame;
-		mainFrame.log("Authorizing Dropbox account..");
+		mainFrame.log("Reading Dropbox config..");
 		readConfig();
 
 		config = DbxRequestConfig.newBuilder(clientIdentifier).withAutoRetryEnabled()
@@ -66,6 +67,7 @@ public class DropboxFileUploader {
 		appInfo = new DbxAppInfo(appKey, appSecret);
 
 		if (accessToken == null) { // Web authorization code (from dropbox tutorial)
+			mainFrame.log("Authorizing Dropbox account..");
 			webAuth();
 		}
 
@@ -106,13 +108,19 @@ public class DropboxFileUploader {
 	
 	private void readConfig() throws Exception {
 
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(MailSender.projectPath + "dropboxAuth.txt")))) {
+		try {
+			Properties config = new Properties();
+			config.load(new FileInputStream(new File(MailSender.projectPath + "dropboxAuth.txt")));
 
-			clientIdentifier = br.readLine().split("=")[1].trim();
-			appKey = br.readLine().split("=")[1].trim();
-			appSecret = br.readLine().split("=")[1].trim();
-			String[] arr = br.readLine().split("=");
-			accessToken = (arr.length == 2 && !arr[1].trim().equals("")) ? arr[1].trim() : null;
+			if(Stream.of(
+					clientIdentifier = config.getProperty("App_Identifier"),
+					appKey = config.getProperty("App_Key"),
+					appSecret = config.getProperty("App_Secret")
+					).anyMatch(Objects::isNull)) {
+				throw new RuntimeException("One(s) of the properties are invalid!");
+			}
+
+			accessToken = config.getProperty("Access_Token");
 
 		} catch (FileNotFoundException nf) {
 			SwingDialogs.error(nf.toString(), "Please write dropbox auth information and restart the application!\n%e%", nf, true);
@@ -129,18 +137,18 @@ public class DropboxFileUploader {
 		File f = new File(MailSender.projectPath + "dropboxAuth.txt");
 		f.createNewFile();
 		try(PrintWriter pw = new PrintWriter(f)) {
-			pw.println("App Identifier = ");
-			pw.println("App key = ");
-			pw.println("App Secret = ");
-			pw.println("Access Token (optional) = ");
+			pw.println("App_Identifier = ");
+			pw.println("App_Key = ");
+			pw.println("App_Secret = ");
+			pw.println("Access_Token = ");
 			pw.println();
 			pw.println();
 			pw.println("#if you have dropbox app, you can use it to upload files and send links when attached files are bigger than limit.");
 			pw.println("#for example :");
-			pw.println("App Identifier = PMailSender/1.0");
-			pw.println("App key = abcdefg12345678");
-			pw.println("App Secret = abcdefg12345678");
-			pw.println("Access Token (optional) = fasdijiojefinaihweaio3hr30493=eawjfpefa");
+			pw.println("#App_Identifier = PMailSender/1.0");
+			pw.println("#App_Key = abcdefg12345678");
+			pw.println("#App_Secret = abcdefg12345678");
+			pw.println("#Access_Token (optional) = fasdijiojefinaihweaio3hr30493=eawjfpefa");
 		}
 		Desktop.getDesktop().open(f);
 	}
