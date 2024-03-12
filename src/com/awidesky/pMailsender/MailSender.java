@@ -15,6 +15,7 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -122,7 +123,7 @@ public class MailSender {
 			files = files.stream().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(LinkedList::new));
 
 			long attatchLimit = mainFrame.getAttatchLimit();
-			if (files.stream().map(File::length).reduce(0L, (a, b) -> a + b) >= attatchLimit) { //if sum of attachment is bigger than 10MB(probably Naver mail limit)
+			if (files.stream().mapToLong(File::length).sum() >= attatchLimit) { //if sum of attachment is bigger than attachment size limit
 
 				title += " + 링크(들)도 클릭";
 				List<File> dropboxed;
@@ -130,28 +131,24 @@ public class MailSender {
 				mainFrame.log("Trying dropbox link instead..");
 
 				dropboxed = files.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
-				if(dropboxed.size() != 0) {
-					files.removeAll(dropboxed);
-				}
-
+				
 				long totalSize = 0L;
-				for(int i = 0; i < files.size(); i++) {
-
-					totalSize += files.get(i).length();
-
+				Iterator<File> it = files.iterator();
+				while(it.hasNext()) {
+					File e = it.next();
+					if(dropboxed.contains(e)) continue;
+					
+					totalSize += e.length();
 					if(totalSize >= attatchLimit) {
 						//No super big file(s), but still exceed limit.
-
-						List<File> temp = files.subList(i, files.size());
-						dropboxed.addAll(temp);
-						temp.clear();
-
+						dropboxed.add(e);
+						it.forEachRemaining(dropboxed::add);
 					}
-
 				}
 
 				content += System.lineSeparator() + new DropboxFileUploader(mainFrame).uploadFileAndGetLink(dropboxed, "/document/");
-
+				files.removeAll(dropboxed);
+				
 			}
 		
 			send(title, content, files);
