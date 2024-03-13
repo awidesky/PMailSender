@@ -6,6 +6,7 @@ import java.awt.Desktop;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -138,6 +140,15 @@ public class MainFrame extends JFrame {
 		setLocation(dim.width / 2 - getSize().width - chooser.getPreferredSize().width / 2, dim.height / 2 - getSize().height / 2);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle("PMailSender");
+        Image image;
+		final File imageFile = new File("".replace(File.separator, "/") + "/icon.png"); //TODO : location getter
+		try {
+			image = ImageIO.read(imageFile);
+		} catch (IOException e) {
+			SwingDialogs.warning("Unable to find the icon image file!", "%e%\n" + imageFile.getAbsolutePath() + "\nDoes not exist! Default Java icon will be used...", e, false);
+			image = null;
+		}
+        setIconImage(image);
         setVisible(true);
 	}
 	
