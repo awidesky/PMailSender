@@ -40,6 +40,7 @@ import javax.swing.filechooser.FileFilter;
 
 import io.github.awidesky.guiUtil.SwingDialogs;
 import io.github.awidesky.guiUtil.TaskLogger;
+import io.github.awidesky.projectPath.JarPath;
 
 public class MainFrame extends JFrame {
 
@@ -141,7 +142,7 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle("PMailSender");
         Image image;
-		final File imageFile = new File("".replace(File.separator, "/") + "/icon.png"); //TODO : location getter
+		final File imageFile = new File(JarPath.getProjectPath(MailSender.class) + "/icon.png");
 		try {
 			image = ImageIO.read(imageFile);
 		} catch (IOException e) {
