@@ -54,12 +54,12 @@ public class MailSender {
 		String home = System.getProperty("user.home");
 		String os = System.getProperty("os.name").toLowerCase();
 		if (os.startsWith("mac")) {
-			projectPath = home + "/Library/Application Support/awidesky/PMailSender";
+			projectPath = home + "/Library/Application Support/Awidesky/PMailSender"; //TODO : use projectPath
 		} else if (os.startsWith("windows")) {
-			projectPath = System.getenv("LOCALAPPDATA") + "\\awidesky\\PMailSender";
+			projectPath = System.getenv("LOCALAPPDATA") + "\\Awidesky\\PMailSender";
 		} else {
 			// Assume linux.
-			projectPath = home + "/.local/share/awidesky/PMailSender";
+			projectPath = home + "/.local/share/Awidesky/PMailSender";
 		}
 		File f = new File(projectPath);
 		f.mkdirs();
