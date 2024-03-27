@@ -7,6 +7,7 @@ import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.Image;
+import java.awt.Taskbar;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -145,6 +146,7 @@ public class MainFrame extends JFrame {
 		final File imageFile = new File(JarPath.getProjectPath(MailSender.class) + "/icon.png");
 		try {
 			image = ImageIO.read(imageFile);
+			Taskbar.getTaskbar().setIconImage(image);
 		} catch (IOException e) {
 			SwingDialogs.warning("Unable to find the icon image file!", "%e%\n" + imageFile.getAbsolutePath() + "\nDoes not exist! Default Java icon will be used...", e, false);
 			image = null;
