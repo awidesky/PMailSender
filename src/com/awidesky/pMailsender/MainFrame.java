@@ -221,7 +221,7 @@ public class MainFrame extends JFrame {
 		
 	}
 	
-	public void disable() {
+	public void disableInputs() {
 		tf_title.setEnabled(false);
 		tf_content.setEnabled(false);
 	}
@@ -282,7 +282,7 @@ public class MainFrame extends JFrame {
 		}
 
 		dialog.dispose();
-		disable();
+		disableInputs();
 		return new LinkedList<>(list);
 	}
 	
