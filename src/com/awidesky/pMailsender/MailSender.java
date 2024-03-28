@@ -30,6 +30,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import io.github.awidesky.guiUtil.LoggerThread;
 import io.github.awidesky.guiUtil.SwingDialogs;
 import io.github.awidesky.guiUtil.TaskLogger;
+import io.github.awidesky.projectPath.UserDataPath;
 import jakarta.activation.DataHandler;
 import jakarta.activation.FileDataSource;
 import jakarta.mail.AuthenticationFailedException;
@@ -49,26 +50,7 @@ import jakarta.mail.internet.MimeUtility;
 
 public class MailSender {
 
-	public static String projectPath = "";
-	static {
-		String home = System.getProperty("user.home");
-		String os = System.getProperty("os.name").toLowerCase();
-		if (os.startsWith("mac")) {
-			projectPath = home + "/Library/Application Support/Awidesky/PMailSender"; //TODO : use projectPath
-		} else if (os.startsWith("windows")) {
-			projectPath = System.getenv("LOCALAPPDATA") + "\\Awidesky\\PMailSender";
-		} else {
-			// Assume linux.
-			projectPath = home + "/.local/share/Awidesky/PMailSender";
-		}
-		File f = new File(projectPath);
-		f.mkdirs();
-		if (!f.exists()) {
-			SwingDialogs.error("Cannot detect appdata directory!", projectPath + "\nis not a valid data directory!", null, true);
-			System.exit(1);
-		}
-		projectPath += File.separator;
-	}
+	public static String projectPath = UserDataPath.appLocalFolder("Awidesky", "PMailSender") + File.separator;
 
 	private static LoggerThread loggerThread = new LoggerThread();
 	private static TaskLogger logger = loggerThread.getLogger();
@@ -90,6 +72,11 @@ public class MailSender {
 	private static List<File> files = new LinkedList<>();
 	
 	public static void main(String[] args) {
+		
+		if (!new File(projectPath).mkdirs()) {
+			SwingDialogs.error("Cannot detect appdata directory!", projectPath + "\nis not a valid data directory!", null, true);
+			return;
+		}
 		
 		setupLogging();
 		
