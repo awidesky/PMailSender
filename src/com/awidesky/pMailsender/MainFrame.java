@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.Taskbar;
@@ -80,7 +81,7 @@ public class MainFrame extends JFrame {
 		setSize(610, 620);
 		
 		
-		JPanel texts = new JPanel();
+		JPanel texts = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 10));
 		texts.add(Box.createVerticalStrut(20));
 		texts.add(title);
 		texts.add(tf_title);
