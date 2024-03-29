@@ -97,7 +97,6 @@ public class MainFrame extends JFrame {
 		console.setRows(15);
 		JScrollPane jsc_files = new JScrollPane(files, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		JScrollPane jsc_console = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		consoles.add(Box.createVerticalStrut(5));
 		consoles.add(Box.createHorizontalStrut(5));
 		consoles.add(jsc_files);
 		consoles.add(Box.createVerticalStrut(5));
