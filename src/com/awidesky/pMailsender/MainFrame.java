@@ -42,6 +42,7 @@ import javax.swing.filechooser.FileFilter;
 import io.github.awidesky.guiUtil.SwingDialogs;
 import io.github.awidesky.guiUtil.TaskLogger;
 import io.github.awidesky.projectPath.JarPath;
+import io.github.awidesky.projectPath.OS;
 
 public class MainFrame extends JFrame {
 
@@ -80,6 +81,7 @@ public class MainFrame extends JFrame {
 		
 		
 		JPanel texts = new JPanel();
+		texts.add(Box.createVerticalStrut(20));
 		texts.add(title);
 		texts.add(tf_title);
 		texts.add(content);
@@ -146,7 +148,7 @@ public class MainFrame extends JFrame {
 		final File imageFile = new File(JarPath.getProjectPath(MailSender.class) + "/icon.png");
 		try {
 			image = ImageIO.read(imageFile);
-			Taskbar.getTaskbar().setIconImage(image);
+			if(OS.CURRUNTOS == OS.MACOS) Taskbar.getTaskbar().setIconImage(image);
 		} catch (IOException e) {
 			SwingDialogs.warning("Unable to find the icon image file!", "%e%\n" + imageFile.getAbsolutePath() + "\nDoes not exist! Default Java icon will be used...", e, false);
 			image = null;
