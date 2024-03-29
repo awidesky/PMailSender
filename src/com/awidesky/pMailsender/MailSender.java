@@ -73,7 +73,8 @@ public class MailSender {
 	
 	public static void main(String[] args) {
 		
-		if (!new File(projectPath).mkdirs()) {
+		File pPath = new File(projectPath);
+		if (!pPath.exists() && !pPath.mkdirs()) {
 			SwingDialogs.error("Cannot detect appdata directory!", projectPath + "\nis not a valid data directory!", null, true);
 			return;
 		}
@@ -142,6 +143,7 @@ public class MailSender {
 		} catch (Exception e) {
 			saveMail(title, content, files);
 			SwingDialogs.error("Error!", "%e%", e, true);
+			e.printStackTrace();
 		}
 		exit();
 	}
