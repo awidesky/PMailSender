@@ -103,7 +103,6 @@ public class MailSender {
 			mainFrame.log("Running...");
 
 			File startPath = new File(chooserLocation);
-			System.out.println(startPath.getAbsolutePath()); //TODO
 			files = mainFrame.chooseLoop(startPath);
 
 			title = mainFrame.getTitle();
@@ -312,7 +311,6 @@ public class MailSender {
 				throw new RuntimeException("One(s) of the properties are invalid!");
 			}
 
-			System.out.println(":: " + chooserLocation); //TODO
 		} catch (Exception e1) {
 			SwingDialogs.error(e1.toString(), "Please write valid smtp configuration(password is optional) and restart the application!\n%e%", e1, true);
 			try {
