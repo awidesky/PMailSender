@@ -3,7 +3,6 @@ package com.awidesky.pMailsender;
 import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -12,14 +11,17 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -293,24 +295,25 @@ public class MailSender {
 					pw.println("#password = doeAdearFema1eDeer1234");
 					pw.println("#port = 465");
 					pw.println("#jmail.debug = true");
-					pw.println("#chooserLocation = C:/Users/John Doe/Downloads");
-					pw.println("#Path separator must be forward slash!");
+					pw.println("#chooserLocation = C:\\Users\\John Doe\\Downloads");
 				}
 				throw new FileNotFoundException(configFile.getAbsolutePath() + " was not found!");
 			}
 
-			Properties config = new Properties();
-			config.load(new FileInputStream(configFile));
-			if(Objects.isNull(password = config.getProperty("password"))) password = String.valueOf(SwingDialogs.inputPassword("Password", "Enter password : "));
-			if(Stream.of(host = config.getProperty("host"),
-					user = config.getProperty("user"),
-					port = config.getProperty("port"),
-					jmaildebug = config.getProperty("jmail.debug", "false"),
-					chooserLocation = config.getProperty("chooserLocation", System.getProperty("user.home").replace('/', File.separatorChar)))
+			HashMap<String, String> map = new HashMap<String, String>();
+			Files.lines(configFile.toPath()).filter(s -> s.length() > 0).filter(s -> !s.startsWith("#"))
+			.map(s -> s.split(Pattern.quote("="))).forEach(arr -> map.put(arr[0].strip(), arr[1].strip()));
+			
+			map.computeIfAbsent("password", s -> String.valueOf(SwingDialogs.inputPassword("Password", "Enter password : ")));
+			if(Stream.of(host = map.get("host"),
+					user = map.get("user"),
+					password = map.get("password"),
+					port = map.get("port"),
+					jmaildebug = map.getOrDefault("jmail.debug", "false"),
+					chooserLocation = map.computeIfAbsent("chooserLocation", s -> System.getProperty("user.home").replace('/', File.separatorChar)))
 					.anyMatch(Objects::isNull)) {
 				throw new RuntimeException("One(s) of the properties are invalid!");
 			}
-
 		} catch (Exception e1) {
 			SwingDialogs.error(e1.toString(), "Please write valid smtp configuration(password is optional) and restart the application!\n%e%", e1, true);
 			try {
