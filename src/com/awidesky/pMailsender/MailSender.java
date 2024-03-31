@@ -103,6 +103,7 @@ public class MailSender {
 			mainFrame.log("Running...");
 
 			File startPath = new File(chooserLocation);
+			System.out.println(startPath.getAbsolutePath()); //TODO
 			files = mainFrame.chooseLoop(startPath);
 
 			title = mainFrame.getTitle();
@@ -253,6 +254,11 @@ public class MailSender {
 				tl.log(new String(b, off, len, Charset.defaultCharset()).stripTrailing());
 			}
 			
+			@Override
+			public void close() {
+				tl.close();
+			}
+			
 		}));
 		
 		try {
@@ -288,7 +294,8 @@ public class MailSender {
 					pw.println("#password = doeAdearFema1eDeer1234");
 					pw.println("#port = 465");
 					pw.println("#jmail.debug = true");
-					pw.println("#chooserLocation = C:\\Users\\John Doe\\Downloads");
+					pw.println("#chooserLocation = C:/Users/John Doe/Downloads");
+					pw.println("#Path separator must be forward slash!");
 				}
 				throw new FileNotFoundException(configFile.getAbsolutePath() + " was not found!");
 			}
@@ -300,11 +307,12 @@ public class MailSender {
 					user = config.getProperty("user"),
 					port = config.getProperty("port"),
 					jmaildebug = config.getProperty("jmail.debug", "false"),
-					chooserLocation = config.getProperty("chooserLocation", System.getProperty("user.home")))
+					chooserLocation = config.getProperty("chooserLocation", System.getProperty("user.home").replace('/', File.separatorChar)))
 					.anyMatch(Objects::isNull)) {
 				throw new RuntimeException("One(s) of the properties are invalid!");
 			}
 
+			System.out.println(":: " + chooserLocation); //TODO
 		} catch (Exception e1) {
 			SwingDialogs.error(e1.toString(), "Please write valid smtp configuration(password is optional) and restart the application!\n%e%", e1, true);
 			try {

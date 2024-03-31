@@ -12,4 +12,5 @@ chooserLocation =
 #password = doeAdearFema1eDeer1234
 #port = 465
 #jmail.debug = true
-#chooserLocation = C:\Users\John Doe\Downloads
+#chooserLocation = C:/Users/John Doe/Downloads
+#Path separator must be forward slash!
