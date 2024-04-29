@@ -253,7 +253,10 @@ public class MainFrame extends JFrame {
 	public void selectedFiles(Collection<File> f) {
 		SwingUtilities.invokeLater(() -> {
 			files.setText("Selected Files(" + formatSize(f.stream().mapToLong(File::length).sum()) + ") :\n");
-			files.append(f.stream().map(File::getAbsolutePath).collect(Collectors.joining("\n")));
+			files.append(f.stream()
+							.map(file -> file.getAbsolutePath() + " (" + formatSize(file.length()) + ")")
+							.collect(Collectors.joining("\n"))
+						);
 			adjustSize(files);
 		});
 	}
