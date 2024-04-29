@@ -348,40 +348,19 @@ public class MailSender {
 		
 	private static void sendSavedMail() throws Exception {
 		
-		BufferedReader br = new BufferedReader(new FileReader(new File(projectPath + "lastTriedMailContent.txt")));
-		String line = null, title;
-		List<String> content = new LinkedList<>();
-		
-		title = br.readLine();
-		
-		while((line = br.readLine()) != null) {
-			content.add(line); 
+		try(BufferedReader contentbr = new BufferedReader(new FileReader(new File(projectPath + "lastTriedMailContent.txt")));
+			BufferedReader attatchbr = new BufferedReader(new FileReader(new File(projectPath + "lastTriedMailAttachment.txt")))) {
+			
+			String title = contentbr.readLine();
+
+			send(title, contentbr.lines().collect(Collectors.joining(System.lineSeparator())), attatchbr.lines().map(File::new).toList());
 		}
-		
-		br.close();
-		
-		setSavedAttatchment();
-		send(title, content.stream().collect(Collectors.joining(System.lineSeparator())), files);
-		
+
 		new File(projectPath + "lastTriedMailContent.txt").delete();
 		new File(projectPath + "lastTriedMailAttachment.txt").delete();
 		
 	}
 
-	private static void setSavedAttatchment() throws Exception {
-		
-		BufferedReader br = new BufferedReader(new FileReader(new File(projectPath + "lastTriedMailAttachment.txt")));
-		String line = null;
-		files = new LinkedList<>();
-		
-		while((line = br.readLine()) != null) {
-			files.add(new File(line)); 
-		}
-		
-		br.close();
-		
-	}
-	
 	private static void saveMail(String title, String content, List<File> files2) {
 
 		try (PrintWriter pw1 = new PrintWriter(new File(projectPath + "lastTriedMailContent.txt"));
