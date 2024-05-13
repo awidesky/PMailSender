@@ -105,7 +105,7 @@ public class MailSender {
 			mainFrame.log("Running...");
 
 			File startPath = new File(chooserLocation);
-			files = mainFrame.chooseLoop(startPath);
+			mainFrame.chooseLoop(startPath, files);
 
 			title = mainFrame.getTitle();
 			content = mainFrame.getContent();
@@ -238,8 +238,8 @@ public class MailSender {
 			}
 		});
 		
+		TaskLogger tl = loggerThread.getLogger("[jakarta.mail] ");
 		session.setDebugOut(new PrintStream(new OutputStream() {
-			private final TaskLogger tl = loggerThread.getLogger("[jakarta.mail] ");
 			@Override
 			public void write(int b) throws IOException {
 				write(new byte[] {(byte)b});
@@ -270,6 +270,8 @@ public class MailSender {
 		} catch (AuthenticationFailedException e) {
 			SwingDialogs.error("Authentication Failed!", "%e%", e, true);
 			resetLogin();
+		} finally {
+			tl.close();
 		}
 	}
 	

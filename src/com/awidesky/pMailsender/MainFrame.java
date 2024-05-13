@@ -18,9 +18,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -47,7 +44,7 @@ import io.github.awidesky.projectPath.OS;
 
 public class MainFrame extends JFrame {
 
-	private static final long serialVersionUID = 7255143921312710354L;
+	private static final long serialVersionUID = 678370421229930710L;
 	private static final Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 	private JDialog dialog = new JDialog();
 	private JFileChooser chooser;
@@ -56,15 +53,17 @@ public class MainFrame extends JFrame {
 	private JLabel content = new JLabel("Content : ");
 	private JTextField tf_title;
 	private JTextField tf_content;
-	private JTextArea files = new JTextArea();
-	private JTextArea console = new JTextArea();
+	private JTextArea ta_files = new JTextArea();
+	private JTextArea ta_console = new JTextArea();
 	private JLabel maxAttat = new JLabel("Attatchment size limit(MB) :");
 	private JTextField tf_maxAttat = new JTextField("10", 3);
 	private JButton openConfig = new JButton("config.txt");
 	private JButton openDropbox = new JButton("dropboxAuth.txt");
 	private JButton openAppFolder = new JButton("open app folder");
+	private JButton deleteSelected = new JButton("delete selected file(s)");
 	
 	private TaskLogger logger;
+	private List<File> files;
 	
 	public MainFrame(TaskLogger taskLogger, String t, String c) {
 		super();
@@ -91,12 +90,12 @@ public class MainFrame extends JFrame {
 		
 		JPanel consoles = new JPanel();
 		consoles.setLayout(new BoxLayout(consoles, BoxLayout.Y_AXIS));
-		files.setEditable(false);
-		files.setRows(10);
-		console.setEditable(false);
-		console.setRows(15);
-		JScrollPane jsc_files = new JScrollPane(files, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		JScrollPane jsc_console = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		ta_files.setEditable(false);
+		ta_files.setRows(10);
+		ta_console.setEditable(false);
+		ta_console.setRows(15);
+		JScrollPane jsc_files = new JScrollPane(ta_files, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		JScrollPane jsc_console = new JScrollPane(ta_console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		consoles.add(Box.createHorizontalStrut(5));
 		consoles.add(jsc_files);
 		consoles.add(Box.createVerticalStrut(5));
@@ -129,10 +128,15 @@ public class MainFrame extends JFrame {
 				SwingDialogs.error("Cannot open app folder!", "%e%", e, false);
 			}
 		});
+		deleteSelected.addActionListener(i -> {
+			chooser.setEnabled(true);
+			new FileDeleteFrame(files, this::log, this::updateSelectedFiles, getX() + getPreferredSize().width / 2, getY());
+		});
 		JPanel bottum_p1 = new JPanel();
 		bottum_p1.add(openConfig);
 		bottum_p1.add(openDropbox);
 		bottum_p1.add(openAppFolder);
+		bottum_p1.add(deleteSelected);
 		JPanel bottum_p2 = new JPanel();
 		bottum_p2.add(maxAttat);
 		bottum_p2.add(tf_maxAttat);
@@ -197,7 +201,7 @@ public class MainFrame extends JFrame {
 			}
 
 			public String getDescription() {
-				return "Picture files (*.jpeg, *.jpg, *.png, *.bmp)";
+				return "Picture ta_files (*.jpeg, *.jpg, *.png, *.bmp)";
 			}
 			
 		});
@@ -217,7 +221,7 @@ public class MainFrame extends JFrame {
 			}
 
 			public String getDescription() {
-				return "Document files (*.pdf, *.docx, *.hwp, *.xlsx, *.pptx)";
+				return "Document ta_files (*.pdf, *.docx, *.hwp, *.xlsx, *.pptx)";
 			}
 		});
 		
@@ -235,9 +239,9 @@ public class MainFrame extends JFrame {
 	}
 	public void log(String str) {
 		SwingUtilities.invokeLater(() -> {
-			console.append(str);
-			console.append("\n");
-			adjustSize(console);
+			ta_console.append(str);
+			ta_console.append("\n");
+			adjustSize(ta_console);
 		});
 		logger.log(str);
 	}
@@ -250,15 +254,21 @@ public class MainFrame extends JFrame {
 		pw.close(); pw.close();
 		log(sw.toString());
 	}
-	public void selectedFiles(Collection<File> f) {
-		SwingUtilities.invokeLater(() -> {
-			files.setText("Selected Files(" + formatSize(f.stream().mapToLong(File::length).sum()) + ") :\n");
-			files.append(f.stream()
+	public void updateSelectedFiles() {
+		Runnable task = () -> {
+			ta_files.setText("Selected Files(" + formatSize(files.stream().mapToLong(File::length).sum()) + ") :\n");
+			ta_files.append(files.stream()
 							.map(file -> file.getAbsolutePath() + " (" + formatSize(file.length()) + ")")
 							.collect(Collectors.joining("\n"))
 						);
-			adjustSize(files);
-		});
+			adjustSize(ta_files);
+			chooser.setEnabled(true);
+		};
+		if(SwingUtilities.isEventDispatchThread()) {
+			task.run();
+		} else {
+			SwingUtilities.invokeLater(task);
+		}
 	}
 
 	private void adjustSize(JTextArea jta) {
@@ -273,22 +283,20 @@ public class MainFrame extends JFrame {
 		setLocation(w, dim.height / 2 - getSize().height / 2);
 	}
 
-	public List<File> chooseLoop(File startPath) {
-		LinkedHashSet<File> list = new LinkedHashSet<>();
-		
+	public void chooseLoop(File startPath, List<File> files) {
+		this.files = files;
 		while (true) {
 			chooser.setCurrentDirectory(startPath);
 			if (chooser.showOpenDialog(dialog) != JFileChooser.APPROVE_OPTION) break;
 			List<File> temp = Arrays.asList(chooser.getSelectedFiles());
 			startPath = temp.get(temp.size() - 1);
-			if(list.stream().anyMatch(temp::contains)) log("[WARNING] Same files will not be attached multiple times!");
-			list.addAll(temp);
-			selectedFiles(list);
+			if(files.stream().anyMatch(temp::contains)) log("[WARNING] Same files will not be attached multiple times!");
+			temp.stream().filter(f -> !files.contains(f)).forEach(files::add);
+			updateSelectedFiles();
 		}
 
 		dialog.dispose();
 		disableInputs();
-		return new LinkedList<>(list);
 	}
 	
 
