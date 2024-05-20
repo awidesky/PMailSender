@@ -147,7 +147,7 @@ public class MainFrame extends JFrame {
 		pack();
 		setLocation(dim.width / 2 - getSize().width - chooser.getPreferredSize().width / 2, dim.height / 2 - getSize().height / 2);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setTitle("PMailSender");
+        setTitle("PMailSender " + MailSender.VERSION);
         Image image;
 		final File imageFile = new File(JarPath.getProjectPath(MailSender.class) + "/icon.png");
 		try {

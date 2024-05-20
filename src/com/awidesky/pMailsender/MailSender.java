@@ -52,6 +52,7 @@ import jakarta.mail.internet.MimeUtility;
 
 public class MailSender {
 
+	public static final String VERSION = "v2.0.0";
 	public static String projectPath = UserDataPath.appLocalFolder("Awidesky", "PMailSender") + File.separator;
 
 	private static LoggerThread loggerThread = new LoggerThread();
@@ -102,6 +103,7 @@ public class MailSender {
 				return;
 			}
 			
+			mainFrame.log("PMailSender " + VERSION);
 			mainFrame.log("Running...");
 
 			File startPath = new File(chooserLocation);
