@@ -128,27 +128,35 @@ public class DropboxFileUploader {
 			throw nf;
 		} catch (Exception e1) {
 			mainFrame.log("Check if dropboxAuth.txt is well-written!");
+			mainFrame.log("Please edit " + MailSender.projectPath  + "dropboxAuth.txt");
+			mainFrame.log("or deleate it so that we can make a new one.");
+			mainFrame.log("Proper dropboxAuth.txt looks like :");
+			dropboxAuthStr.stream().forEach(mainFrame::log);
 			throw e1;
 		}
 
 	}
+	
+	private static List<String> dropboxAuthStr = List.of(
+			"App_Identifier = ",
+			"App_Key = ",
+			"App_Secret = ",
+			"Access_Token = ",
+			"",
+			"",
+			"#if you have dropbox app, you can use it to upload files and send links when attached files are bigger than limit.",
+			"#for example :",
+			"#App_Identifier = PMailSender/1.0",
+			"#App_Key = abcdefg12345678",
+			"#App_Secret = abcdefg12345678",
+			"#Access_Token (optional) = fasdijiojefinaihweaio3hr30493=eawjfpefa"
+			);
 
 	public static void createDropboxAuth() throws IOException {
 		File f = new File(MailSender.projectPath + "dropboxAuth.txt");
 		f.createNewFile();
 		try(PrintWriter pw = new PrintWriter(f)) {
-			pw.println("App_Identifier = ");
-			pw.println("App_Key = ");
-			pw.println("App_Secret = ");
-			pw.println("Access_Token = ");
-			pw.println();
-			pw.println();
-			pw.println("#if you have dropbox app, you can use it to upload files and send links when attached files are bigger than limit.");
-			pw.println("#for example :");
-			pw.println("#App_Identifier = PMailSender/1.0");
-			pw.println("#App_Key = abcdefg12345678");
-			pw.println("#App_Secret = abcdefg12345678");
-			pw.println("#Access_Token (optional) = fasdijiojefinaihweaio3hr30493=eawjfpefa");
+			dropboxAuthStr.stream().forEach(pw::println);
 		}
 		Desktop.getDesktop().open(f);
 	}

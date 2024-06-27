@@ -277,7 +277,23 @@ public class MailSender {
 		}
 	}
 	
-	
+	private static List<String> configStr = List.of(
+			"host = ",
+			"user = ",
+			"password = ",
+			"port = ",
+			"jmail.debug = ",
+			"chooserLocation = ",
+			"",
+			"",
+			"#for example :",
+			"#host = smtp.gmail.com",
+			"#user = JohnDoe@gmail.com",
+			"#password = doeAdearFema1eDeer1234",
+			"#port = 465",
+			"#jmail.debug = true",
+			"#chooserLocation = C:\\Users\\John Doe\\Downloads"
+			);
 	private static void config(String[] args) {
 		mainFrame.log("Reading config file from " + projectPath);
 		File configFile = new File(projectPath + "config.txt");
@@ -285,21 +301,7 @@ public class MailSender {
 			if(!configFile.exists()) {
 				configFile.createNewFile();
 				try(PrintWriter pw = new PrintWriter(configFile)) {
-					pw.println("host = ");
-					pw.println("user = ");
-					pw.println("password = ");
-					pw.println("port = ");
-					pw.println("jmail.debug = ");
-					pw.println("chooserLocation = ");
-					pw.println();
-					pw.println();
-					pw.println("#for example :");
-					pw.println("#host = smtp.gmail.com");
-					pw.println("#user = JohnDoe@gmail.com");
-					pw.println("#password = doeAdearFema1eDeer1234");
-					pw.println("#port = 465");
-					pw.println("#jmail.debug = true");
-					pw.println("#chooserLocation = C:\\Users\\John Doe\\Downloads");
+					configStr.forEach(pw::println);
 				}
 				throw new FileNotFoundException(configFile.getAbsolutePath() + " was not found!");
 			}
@@ -319,6 +321,10 @@ public class MailSender {
 				throw new RuntimeException("One(s) of the properties are invalid!");
 			}
 		} catch (Exception e1) {
+			mainFrame.log("Please edit " + projectPath  + "config.txt");
+			mainFrame.log("or deleate it so that we can make a new one.");
+			mainFrame.log("Proper config.txt looks like :");
+			configStr.stream().forEach(mainFrame::log);
 			SwingDialogs.error(e1.toString(), "Please write valid smtp configuration(password is optional) and restart the application!\n%e%", e1, true);
 			try {
 				Desktop.getDesktop().open(configFile);
