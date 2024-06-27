@@ -137,7 +137,7 @@ public class DropboxFileUploader {
 
 	}
 	
-	private static List<String> dropboxAuthStr = List.of(
+	private final static List<String> dropboxAuthStr = List.of(
 			"App_Identifier = ",
 			"App_Key = ",
 			"App_Secret = ",

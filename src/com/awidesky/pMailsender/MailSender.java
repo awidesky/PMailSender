@@ -277,7 +277,7 @@ public class MailSender {
 		}
 	}
 	
-	private static List<String> configStr = List.of(
+	private final static List<String> configStr = List.of(
 			"host = ",
 			"user = ",
 			"password = ",
