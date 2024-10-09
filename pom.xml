@@ -171,6 +171,7 @@
 							<icon>${basedir}/icon.ico</icon>
 							<type>MSI</type>
 							<winMenu>true</winMenu>
+							<winMenuGroup>Awidesky</winMenuGroup>
 							<winShortcut>true</winShortcut>
 						</configuration>
 					</plugin>
