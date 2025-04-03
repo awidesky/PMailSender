@@ -107,10 +107,11 @@ public class MailSender {
 			mainFrame.log("Running...");
 
 			File startPath = new File(chooserLocation);
-			mainFrame.chooseLoop(startPath, files);
-
-			title = mainFrame.getTitle();
-			content = mainFrame.getContent();
+			SwingUtilities.invokeAndWait(() -> {
+				mainFrame.chooseLoop(startPath, files);
+				title = mainFrame.getTitle();
+				content = mainFrame.getContent();
+			});
 			
 			files = files.stream().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(LinkedList::new));
 
