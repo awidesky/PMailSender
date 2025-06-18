@@ -62,6 +62,7 @@ public class MailSender {
 	private static String user;
 	private static String password;
 	private static String port;
+	private static String sendto;
 	private static String jmaildebug;
 	private static String chooserLocation = ".";
 	
@@ -115,6 +116,10 @@ public class MailSender {
 			
 			files = files.stream().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(LinkedList::new));
 
+			if(files.isEmpty() && !SwingDialogs.confirm("File list is empty!", "Send mail without attatchments?")) {
+				
+			}
+			
 			long attatchLimit = mainFrame.getAttatchLimit();
 			if (files.stream().mapToLong(File::length).sum() >= attatchLimit) { //if sum of attachment is bigger than attachment size limit
 
@@ -316,6 +321,7 @@ public class MailSender {
 					user = map.get("user"),
 					password = map.get("password"),
 					port = map.get("port"),
+					sendto = map.getOrDefault("sendto", user),
 					jmaildebug = map.getOrDefault("jmail.debug", "false"),
 					chooserLocation = map.computeIfAbsent("chooserLocation", s -> System.getProperty("user.home").replace('/', File.separatorChar)))
 					.anyMatch(Objects::isNull)) {
@@ -399,7 +405,7 @@ public class MailSender {
 		mainFrame.log("\tSetting Message Config...");
 		MimeMessage message = new MimeMessage(session);
 		message.setFrom(new InternetAddress(user));
-		message.addRecipient(Message.RecipientType.TO, new InternetAddress(user));
+		message.addRecipient(Message.RecipientType.TO, new InternetAddress(sendto));
 		message.setHeader("content-type", "text/html;charset=UTF-8");
 		message.setSubject(title);
 
