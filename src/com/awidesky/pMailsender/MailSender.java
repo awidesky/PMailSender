@@ -100,7 +100,7 @@ public class MailSender {
 			config(args);
 			setSession();
 			if(checkLastAttempt()) {
-				exit();
+				shutdownThreads();
 				return;
 			}
 			
@@ -117,7 +117,7 @@ public class MailSender {
 			files = files.stream().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(LinkedList::new));
 
 			if(files.isEmpty() && !SwingDialogs.confirm("File list is empty!", "Send mail without attatchments?")) {
-				
+				exit(0);
 			}
 			
 			long attatchLimit = mainFrame.getAttatchLimit();
@@ -155,7 +155,7 @@ public class MailSender {
 			SwingDialogs.error("Error!", "%e%", e, true);
 			e.printStackTrace();
 		}
-		exit();
+		shutdownThreads();
 	}
 	
 
@@ -338,7 +338,7 @@ public class MailSender {
 			} catch (IOException e) {
 				SwingDialogs.error("Unable to open : " + configFile.getAbsolutePath(), "%e%", e, true);
 			}
-			exit();
+			shutdownThreads();
 			System.exit(1);
 		}
 		
@@ -447,9 +447,14 @@ public class MailSender {
 	}
 	
 
-	private static void exit() {
+	private static void shutdownThreads() {
 		SwingUtilities.invokeLater(mainFrame::dispose);
 		loggerThread.shutdown(1000);
+	}
+	
+	private static void exit(int code) {
+		shutdownThreads();
+		System.exit(code);
 	}
 }
 
