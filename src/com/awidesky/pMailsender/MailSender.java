@@ -408,6 +408,9 @@ public class MailSender {
 		message.addRecipient(Message.RecipientType.TO, new InternetAddress(sendto));
 		message.setHeader("content-type", "text/html;charset=UTF-8");
 		message.setSubject(title);
+		mainFrame.log("\tFrom : " + Arrays.stream(message.getFrom()).map(Object::toString).collect(Collectors.joining(", ")));
+		mainFrame.log("\tTo : " + Arrays.stream(message.getAllRecipients()).map(Object::toString).collect(Collectors.joining(", ")));
+		
 
 		mainFrame.log("\tAdding Text Content Into Message...");
 		MimeBodyPart m1 = new MimeBodyPart();
