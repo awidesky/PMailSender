@@ -194,7 +194,7 @@
 						<configuration>
 							<icon>${basedir}/icon.icns</icon>
 							<type>PKG</type>
-							<macPackageIdentifier>PMailSender-${project.version}</macPackageIdentifier>
+							<macPackageIdentifier>com.awidesky.pMailsender.MailSender</macPackageIdentifier>
 							<macPackageName>PMailSender</macPackageName>
 						</configuration>
 					</plugin>
