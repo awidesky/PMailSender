@@ -62,7 +62,6 @@ public class MailSender {
 	private static String user;
 	private static String password;
 	private static String port;
-	private static String sendto;
 	private static String jmaildebug;
 	private static String chooserLocation = ".";
 	
@@ -329,7 +328,7 @@ public class MailSender {
 					user = map.get("user"),
 					password = map.get("password"),
 					port = map.get("port"),
-					sendto = map.getOrDefault("sendto", user),
+					mainFrame.setSendTo(map.getOrDefault("sendto", user)),
 					jmaildebug = map.getOrDefault("jmail.debug", "false"),
 					chooserLocation = map.computeIfAbsent("chooserLocation", s -> System.getProperty("user.home").replace('/', File.separatorChar)))
 					.anyMatch(Objects::isNull)) {
@@ -413,7 +412,7 @@ public class MailSender {
 		mainFrame.log("\tSetting Message Config...");
 		MimeMessage message = new MimeMessage(session);
 		message.setFrom(new InternetAddress(user));
-		message.addRecipient(Message.RecipientType.TO, new InternetAddress(sendto));
+		message.addRecipient(Message.RecipientType.TO, new InternetAddress(mainFrame.getSendTo()));
 		message.setHeader("content-type", "text/html;charset=UTF-8");
 		message.setSubject(title);
 		mainFrame.log("\tFrom : " + Arrays.stream(message.getFrom()).map(Object::toString).collect(Collectors.joining(", ")));
