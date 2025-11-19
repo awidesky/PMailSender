@@ -57,6 +57,8 @@ public class MainFrame extends JFrame {
 	private JTextArea ta_console = new JTextArea();
 	private JLabel maxAttat = new JLabel("Attatchment size limit(MB) :");
 	private JTextField tf_maxAttat = new JTextField("10", 3);
+	private JLabel sendTo = new JLabel("Send to : ");
+	private JTextField tf_sendTo = new JTextField(15);
 	private JButton openConfig = new JButton("config.txt");
 	private JButton openDropbox = new JButton("dropboxAuth.txt");
 	private JButton openAppFolder = new JButton("open app folder");
@@ -140,6 +142,9 @@ public class MainFrame extends JFrame {
 		JPanel bottum_p2 = new JPanel();
 		bottum_p2.add(maxAttat);
 		bottum_p2.add(tf_maxAttat);
+		bottum_p2.add(Box.createHorizontalStrut(15));
+		bottum_p2.add(sendTo);
+		bottum_p2.add(tf_sendTo);
 		buttons.add(bottum_p1, BorderLayout.NORTH);
 		buttons.add(bottum_p2, BorderLayout.SOUTH);
 		add(buttons, BorderLayout.SOUTH);
@@ -233,6 +238,16 @@ public class MainFrame extends JFrame {
 	}
 	public String getTitle() { return tf_title.getText(); }
 	public String getContent() { return tf_content.getText(); }
+
+	public String setSendTo(String sendTo) {
+		tf_sendTo.setText(sendTo);
+		return sendTo;
+	}
+	
+	public String getSendTo() {
+		return tf_sendTo.getText();
+	}
+	
 	
 	public void log() {
 		log("\n");
