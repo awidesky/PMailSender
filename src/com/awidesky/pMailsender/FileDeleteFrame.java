@@ -17,7 +17,7 @@ public class FileDeleteFrame  extends JFrame {
 	private static final long serialVersionUID = 7916525836590817176L;
 
 	public FileDeleteFrame(List<File> files, Consumer<String> logger, Runnable callback, int x, int y)  {
-		super("Delete attatchment(s)");
+		super("Delete attachment(s)");
 		setLayout(new BorderLayout(10, 10));
 
 		JPanel p = new JPanel();

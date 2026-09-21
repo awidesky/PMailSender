@@ -144,7 +144,7 @@ public class DropboxFileUploader {
 			"Access_Token = ",
 			"",
 			"",
-			"#if you have dropbox app, you can use it to upload files and send links when attached files are bigger than limit.",
+			"#if you have dropbox app, you can use it to upload files and send links when attached files are bigger than the limit.",
 			"#for example :",
 			"#App_Identifier = PMailSender/1.0",
 			"#App_Key = abcdefg12345678",

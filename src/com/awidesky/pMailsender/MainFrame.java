@@ -55,8 +55,8 @@ public class MainFrame extends JFrame {
 	private JTextField tf_content;
 	private JTextArea ta_files = new JTextArea();
 	private JTextArea ta_console = new JTextArea();
-	private JLabel maxAttat = new JLabel("Attatchment size limit(MB) :");
-	private JTextField tf_maxAttat = new JTextField("10", 3);
+	private JLabel maxAttachLabel = new JLabel("Attachment size limit(MB) :");
+	private JTextField tf_maxAttach = new JTextField("10", 3);
 	private JLabel sendTo = new JLabel("Send to : ");
 	private JTextField tf_sendTo = new JTextField(15);
 	private JButton openConfig = new JButton("config.txt");
@@ -140,8 +140,8 @@ public class MainFrame extends JFrame {
 		bottum_p1.add(openAppFolder);
 		bottum_p1.add(deleteSelected);
 		JPanel bottum_p2 = new JPanel();
-		bottum_p2.add(maxAttat);
-		bottum_p2.add(tf_maxAttat);
+		bottum_p2.add(maxAttachLabel);
+		bottum_p2.add(tf_maxAttach);
 		bottum_p2.add(Box.createHorizontalStrut(15));
 		bottum_p2.add(sendTo);
 		bottum_p2.add(tf_sendTo);
@@ -239,8 +239,17 @@ public class MainFrame extends JFrame {
 	public String getTitle() { return tf_title.getText(); }
 	public String getContent() { return tf_content.getText(); }
 
+	/**
+	 * Sets attachment size limit(MB) displayed in the GUI.
+	 * Called with the value of "attachmentSizeLimitMB" from config.txt; user can still edit it before sending.
+	 */
+	public String setMaxAttach(String mb) {
+		SwingUtilities.invokeLater(() -> tf_maxAttach.setText(mb));
+		return mb;
+	}
+	
 	public String setSendTo(String sendTo) {
-		tf_sendTo.setText(sendTo);
+		SwingUtilities.invokeLater(() -> tf_sendTo.setText(sendTo));
 		return sendTo;
 	}
 	
@@ -315,18 +324,18 @@ public class MainFrame extends JFrame {
 	}
 	
 
-	public long getAttatchLimit() {
+	public long getAttachLimit() {
 		AtomicInteger value = new AtomicInteger(10);
 		try {
 			SwingUtilities.invokeAndWait(() -> {
 				try {
-					value.set(Integer.parseInt(tf_maxAttat.getText().strip()));
+					value.set(Integer.parseInt(tf_maxAttach.getText().strip()));
 				} catch (NumberFormatException e) {
-					SwingDialogs.error("Invalid integer!", "\"" + tf_maxAttat.getText() + "\"" + " is invalid number!\nConsidering max attachment value as 10MB...", null, true);
+					SwingDialogs.error("Invalid integer!", "\"" + tf_maxAttach.getText() + "\"" + " is invalid number!\nConsidering max attachment value as 10MB...", null, true);
 				}
 			});
 		} catch (InvocationTargetException | InterruptedException e) {
-			SwingDialogs.error("Invalid integer!", "\"" + tf_maxAttat.getText() + "\"" + " is invalid number!\nConsidering max attachment value as 10MB...", null, true);
+			SwingDialogs.error("Invalid integer!", "\"" + tf_maxAttach.getText() + "\"" + " is invalid number!\nConsidering max attachment value as 10MB...", null, true);
 		}
 		return value.get() * 1024 * 1024;
 	}

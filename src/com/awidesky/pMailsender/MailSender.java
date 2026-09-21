@@ -114,19 +114,19 @@ public class MailSender {
 			
 			files = files.stream().sorted((f1, f2) -> Long.valueOf(f1.length()).compareTo(Long.valueOf(f2.length()))).collect(Collectors.toCollection(LinkedList::new));
 
-			if(files.isEmpty() && !SwingDialogs.confirm("File list is empty!", "Send mail without attatchments?")) {
+			if(files.isEmpty() && !SwingDialogs.confirm("File list is empty!", "Send mail without attachments?")) {
 				exit(0);
 			}
 			
-			long attatchLimit = mainFrame.getAttatchLimit();
-			if (files.stream().mapToLong(File::length).sum() >= attatchLimit) { //if sum of attachment is bigger than attachment size limit
+			long attachmentSizeLimit = mainFrame.getAttachLimit();
+			if (files.stream().mapToLong(File::length).sum() >= attachmentSizeLimit) { //if sum of attachment is bigger than attachment size limit
 
 				title += " + 링크(들)도 클릭";
 				List<File> dropboxed;
-				mainFrame.log("Mail attachment too big! (>" + attatchLimit / (1024 * 1024) + "MB)");
+				mainFrame.log("Mail attachment too big! (>" + attachmentSizeLimit / (1024 * 1024) + "MB)");
 				mainFrame.log("Trying dropbox link instead..");
 
-				dropboxed = files.stream().filter(f -> f.length() >= attatchLimit).collect(Collectors.toList());
+				dropboxed = files.stream().filter(f -> f.length() >= attachmentSizeLimit).collect(Collectors.toList());
 				
 				long totalSize = 0L;
 				Iterator<File> it = files.iterator();
@@ -135,7 +135,7 @@ public class MailSender {
 					if(dropboxed.contains(e)) continue;
 					
 					totalSize += e.length();
-					if(totalSize >= attatchLimit) {
+					if(totalSize >= attachmentSizeLimit) {
 						//No super big file(s), but still exceed limit.
 						dropboxed.add(e);
 						it.forEachRemaining(dropboxed::add);
@@ -297,6 +297,7 @@ public class MailSender {
 			"port = ",
 			"jmail.debug = ",
 			"chooserLocation = ",
+			"attachmentSizeLimitMB = ",
 			"",
 			"",
 			"#for example :",
@@ -305,7 +306,8 @@ public class MailSender {
 			"#password = doeAdearFema1eDeer1234",
 			"#port = 465",
 			"#jmail.debug = true",
-			"#chooserLocation = C:\\Users\\John Doe\\Downloads"
+			"#chooserLocation = C:\\Users\\John Doe\\Downloads",
+			"#attachmentSizeLimitMB = 10"
 			);
 	private static void config(String[] args) {
 		mainFrame.log("Reading config file from " + projectPath);
@@ -330,6 +332,7 @@ public class MailSender {
 					port = map.get("port"),
 					mainFrame.setSendTo(map.getOrDefault("sendto", user)),
 					jmaildebug = map.getOrDefault("jmail.debug", "false"),
+					mainFrame.setMaxAttach(map.getOrDefault("attachmentSizeLimitMB", "10")),
 					chooserLocation = map.computeIfAbsent("chooserLocation", s -> System.getProperty("user.home").replace('/', File.separatorChar)))
 					.anyMatch(Objects::isNull)) {
 				throw new RuntimeException("One(s) of the properties are invalid!");
@@ -373,11 +376,11 @@ public class MailSender {
 	private static void sendSavedMail() throws Exception {
 		
 		try(BufferedReader contentbr = new BufferedReader(new FileReader(new File(projectPath + "lastTriedMailContent.txt")));
-			BufferedReader attatchbr = new BufferedReader(new FileReader(new File(projectPath + "lastTriedMailAttachment.txt")))) {
+			BufferedReader attachbr  = new BufferedReader(new FileReader(new File(projectPath + "lastTriedMailAttachment.txt")))) {
 			
 			String title = contentbr.readLine();
 
-			send(title, contentbr.lines().collect(Collectors.joining(System.lineSeparator())), attatchbr.lines().map(File::new).toList());
+			send(title, contentbr.lines().collect(Collectors.joining(System.lineSeparator())), attachbr.lines().map(File::new).toList());
 		}
 
 		new File(projectPath + "lastTriedMailContent.txt").delete();
@@ -407,7 +410,7 @@ public class MailSender {
 	}
 	
 	
-	public static void send(String title, String content, List<File> attatch) throws Exception {
+	public static void send(String title, String content, List<File> attachments) throws Exception {
 
 		mainFrame.log("\tSetting Message Config...");
 		MimeMessage message = new MimeMessage(session);
@@ -428,7 +431,7 @@ public class MailSender {
 
 		mainFrame.log("\tAdding File Attachment Into Message...");
 
-		for (File f : attatch) {
+		for (File f : attachments) {
 				
 				MimeBodyPart m2 = new MimeBodyPart();
 				m2.attachFile(f);
@@ -449,7 +452,7 @@ public class MailSender {
 		} catch (AuthenticationFailedException e) {
 			SwingDialogs.error("Authentication Failed", "%e%", e, true);
 			resetLogin();
-			send(title, content, attatch);
+			send(title, content, attachments);
 			return;
 		}
 		mainFrame.log("\nMessage Sent Successfully!");
