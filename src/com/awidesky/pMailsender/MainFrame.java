@@ -58,7 +58,7 @@ public class MainFrame extends JFrame {
 	private JLabel maxAttachLabel = new JLabel("Attachment size limit(MB) :");
 	private JTextField tf_maxAttach = new JTextField("10", 3);
 	private JLabel sendTo = new JLabel("Send to : ");
-	private JTextField tf_sendTo = new JTextField(15);
+	private JTextField tf_sendTo = new JTextField(20);
 	private JButton openConfig = new JButton("config.txt");
 	private JButton openDropbox = new JButton("dropboxAuth.txt");
 	private JButton openAppFolder = new JButton("open app folder");
@@ -249,7 +249,10 @@ public class MainFrame extends JFrame {
 	}
 	
 	public String setSendTo(String sendTo) {
-		SwingUtilities.invokeLater(() -> tf_sendTo.setText(sendTo));
+		SwingUtilities.invokeLater(() -> {
+			tf_sendTo.setText(sendTo);
+			tf_sendTo.setCaretPosition(0);
+		});
 		return sendTo;
 	}
 	
